@@ -27,28 +27,26 @@ initial_scenario = pd.read_csv(f'{config.SCENARIO_FOLDER_PATH}/{scenario_filenam
 # count_ws = pd.DataFrame(initial_scenario_no_ws, index=[0,1], columns=[1, 2])
 
 # function only displaying consumption
-consumption_liter = calc.get_consumption_manufacturer_liter(initial_scenario)
-consumption_kWh = calc.get_consumption_manufacturer_kwh(initial_scenario)
-print(f"consumption l {consumption_liter}")
-print(f"consumption kWh {consumption_kWh}")
+
 
 # calculating consumption per year
-consumption_liter_per_year = calc.get_consumption_per_year(consumption_liter, initial_scenario)
-consumption_kWh_per_year = calc.get_consumption_per_year(consumption_kWh, initial_scenario)
-print(f"consumption_liter_per_year  {consumption_liter_per_year}")
-print(f"consumption_kWh_per_year {consumption_kWh_per_year}")
+consumption_per_year_liter = calc.calculate_yearly_consumption_liter(initial_scenario)
+print(f"consumption_liter_per_year  {consumption_per_year_liter}")
+consumption_per_year_kwh = calc.calculate_yearly_consumption_kwh(initial_scenario)
+print(f"consumption_kwh_per_year  {consumption_per_year_kwh}")
+
+
+# add energy supply column
+consumption_per_year_liter_with_energy_supply = consumption_per_year_liter.to_frame('consumption_manufacturer_l').join(initial_scenario['energysupply'])
+print(f"energy supply spalte zu liter series: {consumption_per_year_liter_with_energy_supply}")
+consumption_per_year_kWh_with_energy_supply = consumption_per_year_kwh.to_frame('consumption_manufacturer_kWh').join(initial_scenario['energysupply'])
+print(f"energy supply spalte zu kwh series: {consumption_per_year_kWh_with_energy_supply}")
 
 # calculating co2e per year
-# add energy supply column
-consumption_liter_per_year_with_energy_supply = consumption_liter_per_year.to_frame('consumption_manufacturer_l').join(initial_scenario['energysupply'])
-print(f"energy supply spalte {consumption_liter_per_year_with_energy_supply}")
-consumption_kWh_per_year_with_energy_supply = consumption_kWh_per_year.to_frame('consumption_manufacturer_kWh').join(initial_scenario['energysupply'])
-print(f"energy supply spalte numero dos {consumption_kWh_per_year_with_energy_supply}")
+# if Abfrage
+calc.get_co2e_usage_ttw_per_car(consumption_per_year_liter_with_energy_supply, consumption_per_year_kWh_with_energy_supply, initial_scenario)
 
-#if Abfrage
-Test = calc.get_co2e_usage_ttw(consumption_kWh_per_year_with_energy_supply, initial_scenario)
 
-print(f" columns: {consumption_liter_per_year_with_energy_supply.columns}")
 # initial dashboard layout
 app.layout = dbc.Container([
     header.header_images,
