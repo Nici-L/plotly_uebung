@@ -3,7 +3,21 @@
   <component name="CsvFileAttributes">
     <option name="attributeMap">
       <map>
+        <entry key="C:\Users\lotte\OneDrive\Desktop\MA\daten_python\parameter_scenario_2022.CSV">
+          <value>
+            <Attribute>
+              <option name="separator" value=";" />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\source\assets\data\parameter_alle_szenarien_2022_csv.CSV">
+          <value>
+            <Attribute>
+              <option name="separator" value=";" />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\source\assets\data\parameter_alle_szenarien_2022_csv_hybrid_version.CSV">
           <value>
             <Attribute>
               <option name="separator" value=";" />
@@ -31,6 +45,41 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\source\assets\data\parameter_scenario_2022 - Kopie (2).CSV">
+          <value>
+            <Attribute>
+              <option name="separator" value=";" />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\source\assets\data\parameter_scenario_2022 - Kopie.CSV">
+          <value>
+            <Attribute>
+              <option name="separator" value=";" />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\source\assets\data\parameter_scenario_2022.CSV">
+          <value>
+            <Attribute>
+              <option name="separator" value=";" />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\source\assets\data\parameter_scenario_2022_ausgedachte_höhere_Werte.CSV">
+          <value>
+            <Attribute>
+              <option name="separator" value=";" />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\source\assets\data\parameter_scenario_2022_ausgedachte_niedrigere_Werte.CSV">
+          <value>
+            <Attribute>
+              <option name="separator" value=";" />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\source\assets\icev_co2e_2022_py.CSV">
           <value>
             <Attribute>
@@ -49,6 +98,13 @@
           <value>
             <Attribute>
               <option name="separator" value=";" />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\source\cleaned_data.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
             </Attribute>
           </value>
         </entry>

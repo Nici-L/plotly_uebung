@@ -1,2 +1,2 @@
-SCENARIO_FOLDER_PATH = 'assets/data'
-PICTURES_FOLDER_PATH = 'assets'
+SCENARIO_FOLDER_PATH = 'source/assets/data'
+PICTURES_FOLDER_PATH = 'source/assets'

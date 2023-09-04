@@ -1,3 +1,0 @@
-LKW Segment;Gewicht Grundfahrzeug [kg];Verbrauch AdBlue [kg/km];Jahresfahrleistung; Lebensdauer;Herstellung [kg CO2e];TtW Kraftstoff B7 [kg CO2e];Herstellung Kraftstoff  B7 [kg CO2e];WtW Kraftstoff B7 [kg CO2e];Herstellung AdBlue  [kg CO2e];Dieselverbrauch [kWh/km];CO2e Diesel B7 [kg CO2e/kWh];Summe  [kg CO2e]
-Mittelschwerer LKW im Verteilverkehr ICE Diesel;12800;0,01;50.000 km;12 Jahre;39037;389475,00;100281;489756;4043;2,54;0,255;532836
-Schwerer LKW im Transitverkehr ICE Diesel ;14700;0,01;50.000 km;13 Jahre;44135;646059;166345;812404;6707;3,16;0,255;863246

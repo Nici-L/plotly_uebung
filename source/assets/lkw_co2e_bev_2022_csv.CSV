@@ -1,5 +1,0 @@
-LKW segment ;Gewicht Grundfahrzeug [kg];Leistung Elektromotor [kW];Gewicht Antriebsstrang [kg];Kapazität Akku [kWh];spezifischer Verbrauch Strom [kWh/km];[kg CO2e] Fahrzeugherstellung ;[kg CO2e] Herstellung Elektromotor;[kg CO2e] Herstellung Antriebsstrang ;[kg CO2e] Herstellung Akku ;[kg CO2e] vorgelagerte Emissionen Strom
-Mittelschwerer LKW im urbanen Verteilerverkehr BEV-EE ONC;11300;350;270;110;1,1;29293;1578;11341;36283;8780
-Mittelschwerer LKW im urbanen Verteilerverkehr BEV-AT ONC;11300;350;270;110;1,1;29293;1578;11341;36283;146549
-Schwerer LKW im Transitverkehr BEV-AT-OL;13200;450;350;200;1,55;33687;2029;14701;32985;275482
-Schwerer LKW im Transitverkehr BEV-EE-OL;13200;450;350;200;1,55;33687;2029;14701;32985;16502
