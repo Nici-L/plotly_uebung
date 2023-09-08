@@ -5,7 +5,7 @@ import source.config as config
 header_images = html.Div([
     dbc.Row([  # Row 1
         dbc.Col(
-            html.Div(html.Img(src=f"{config.PICTURES_FOLDER_PATH}/kit_logo.png", width="50%")),
+            html.Div(html.Img(src=f"kit_logo.png", width="25%")),
             width={"size": 2}
         ),
         dbc.Col(  # Column for headline
