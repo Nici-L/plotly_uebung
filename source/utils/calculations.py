@@ -74,6 +74,28 @@ def get_co2e_usage_ttw_per_car(dataframe_consumption_per_year_liter_with_energy_
 
 
 def get_co2e_usage_ttw_per_segment(series_with_calculated_co2e, dataframe_with_vehicle_stock):
+    """
+        Calculate the CO2 equivalent (CO2e) usage per segment based on a series of calculated CO2e values
+        and a DataFrame containing vehicle stock information.
+
+        :param series_with_calculated_co2e: A pandas Series with calculated CO2e values, where the index
+                                             corresponds to segments.
+        :type series_with_calculated_co2e: pd.Series
+
+        :param dataframe_with_vehicle_stock: A pandas DataFrame containing information about vehicle stock,
+                                             where each row represents a segment and includes at least a 'vehicle_stock' column.
+        :type dataframe_with_vehicle_stock: pd.DataFrame
+
+        :return: A pandas Series with calculated CO2e usage per segment, where the index corresponds to the segments
+                 in the input DataFrame.
+        :rtype: pd.Series
+
+        This function iterates through the segments in the input DataFrame, multiplies the corresponding CO2e value
+        from the series_with_calculated_co2e by the 'vehicle_stock' for each segment, and stores the result in
+        calculated_co2e_per_segment_series.
+
+        Note: The input Series and DataFrame must have matching indices for this function to work correctly.
+        """
     calculated_co2e_per_segment_series = pd.Series(index=dataframe_with_vehicle_stock.index)
     for ind in dataframe_with_vehicle_stock.index:
         row = dataframe_with_vehicle_stock.loc[ind]
@@ -83,6 +105,29 @@ def get_co2e_usage_ttw_per_segment(series_with_calculated_co2e, dataframe_with_v
 
 
 def get_co2e_usage_wtw_per_car(dataframe_consumption_per_year_liter_with_energy_supply, dataframe_consumption_per_year_kWh_with_energy_supply,  dataframe_with_co2e_values):
+    """
+        Calculate the CO2 equivalent (CO2e) usage per car based on consumption data and CO2e values.
+
+        :param dataframe_consumption_per_year_liter_with_energy_supply: A pandas DataFrame containing consumption data
+                                                                      per year in liters with energy supply information.
+        :type dataframe_consumption_per_year_liter_with_energy_supply: pd.DataFrame
+
+        :param dataframe_consumption_per_year_kWh_with_energy_supply: A pandas DataFrame containing consumption data
+                                                                   per year in kilowatt-hours (kWh) with energy supply information.
+        :type dataframe_consumption_per_year_kWh_with_energy_supply: pd.DataFrame
+
+        :param dataframe_with_co2e_values: A pandas DataFrame containing CO2e values and energy supply information.
+        :type dataframe_with_co2e_values: pd.DataFrame
+
+        :return: A pandas Series with calculated CO2e usage per car for each row in the input DataFrame.
+        :rtype: pd.Series
+
+        This function iterates through the rows in the input DataFrame (dataframe_with_co2e_values) and calculates
+        the CO2e usage per car based on the provided consumption data and CO2e values. The resulting CO2e values
+        are stored in a Series and returned.
+
+        Note: The input DataFrames must have matching indices for this function to work correctly.
+        """
     calculated_co2_series = pd.Series(index=dataframe_with_co2e_values.index)
     for ind in dataframe_with_co2e_values.index:
         row = dataframe_with_co2e_values.loc[ind]
@@ -101,6 +146,27 @@ def get_co2e_usage_wtw_per_car(dataframe_consumption_per_year_liter_with_energy_
 
 
 def get_co2e_usage_wtw_per_segment(series_with_calculated_co2e, dataframe_with_vehicle_stock):
+    """
+        Calculate the CO2 equivalent (CO2e) usage per segment based on calculated CO2e values and vehicle stock data.
+
+        :param series_with_calculated_co2e: A pandas Series with calculated CO2e values, where the index
+                                             corresponds to segments.
+        :type series_with_calculated_co2e: pd.Series
+
+        :param dataframe_with_vehicle_stock: A pandas DataFrame containing information about vehicle stock,
+                                             where each row represents a segment and includes at least a 'vehicle_stock' column.
+        :type dataframe_with_vehicle_stock: pd.DataFrame
+
+        :return: A pandas Series with calculated CO2e usage per segment, where the index corresponds to the segments
+                 in the input DataFrame.
+        :rtype: pd.Series
+
+        This function iterates through the segments in the input DataFrame and calculates the CO2e usage per segment
+        based on the provided CO2e values and vehicle stock data. The resulting CO2e values are stored in a Series
+        and returned.
+
+        Note: The input Series and DataFrame must have matching indices for this function to work correctly.
+        """
     calculated_co2e_per_segment_series = pd.Series(index=dataframe_with_vehicle_stock.index)
     for ind in dataframe_with_vehicle_stock.index:
         row = dataframe_with_vehicle_stock.loc[ind]
@@ -110,18 +176,56 @@ def get_co2e_usage_wtw_per_segment(series_with_calculated_co2e, dataframe_with_v
 
 
 def calculate_production_co2e_per_car(dataframe):
+    """
+       Calculate the CO2 equivalent (CO2e) emissions during the production phase per car.
+
+       :param dataframe: A pandas DataFrame containing information about car production factors,
+                         such as glider weight, electric engine power, battery capacity, and more.
+       :type dataframe: pd.DataFrame
+
+       :return: A pandas Series with calculated CO2e emissions during the production phase per car,
+                where the index corresponds to the rows in the input DataFrame.
+       :rtype: pd.Series
+
+       This function iterates through the rows in the input DataFrame and calculates the CO2e emissions during the
+       production phase per car based on the provided production factors. The resulting CO2e values are stored in
+       a Series and returned.
+
+       Note: The input DataFrame should contain relevant columns like 'glider_weight', 'power_electric_engine',
+       'power_electric_engine_2', 'battery_capacity_brutto', 'co2e_production', 'co2e_electric_engine',
+       'weight_electric_drivechain', 'co2e_drivechain', etc.
+       """
     calculated_co2e_production_series = pd.Series(index=dataframe.index)
     for ind in dataframe.index:
         row = dataframe.loc[ind]
-        calculated_co2e_production = row['glider_weight'] * row['co2e_production'] + (row['power_electric_engine']+ row['power_electric_engine'])*row['co2e_electric_engine'] + row['battery_capacity_brutto']*row['co2e_battery_production'] + row['weight_electric_drivechain']*row['co2e_drivechain']
+        calculated_co2e_production = row['glider_weight'] * row['co2e_production'] + (row['power_electric_engine']+ row['power_electric_engine_2'])*row['co2e_electric_engine'] + row['battery_capacity_brutto']*row['co2e_battery_production'] + row['weight_electric_drivechain']*row['co2e_drivechain']
         calculated_co2e_production_series[ind] = calculated_co2e_production
     return calculated_co2e_production_series
 
 
 def calculate_co2e_savings(dataframe):
+    """
+       Calculate the CO2 equivalent (CO2e) savings based on glider and battery weight factors.
+
+       :param dataframe: A pandas DataFrame containing information about CO2e savings factors, including glider weight,
+                         battery weight, and associated CO2e savings.
+       :type dataframe: pd.DataFrame
+
+       :return: A pandas Series with calculated CO2e savings, where the index corresponds to the rows in the input DataFrame.
+       :rtype: pd.Series
+
+       This function iterates through the rows in the input DataFrame and calculates the CO2e savings based on the provided
+       glider weight, battery weight, and associated CO2e savings factors. The resulting CO2e savings values are stored
+       in a Series and returned.
+
+       Note: The input DataFrame should contain relevant columns like 'glider_weight', 'co2e_savings_glider',
+       'battery_weight', 'co2e_savings_battery', etc.
+       """
     calculated_co2e_savings_series = pd.Series(index=dataframe.index)
     for ind in dataframe.index:
         row = dataframe.loc[ind]
         calculated_co2e_savings = row['glider_weight']* row['co2e_savings_glider'] + row['battery_weight']*row['co2e_savings_battery']
         calculated_co2e_savings_series[ind] = calculated_co2e_savings
     return calculated_co2e_savings_series
+
+

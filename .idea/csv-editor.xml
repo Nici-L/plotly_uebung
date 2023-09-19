@@ -10,55 +10,6 @@
             </Attribute>
           </value>
         </entry>
-        <entry key="\source\assets\data\parameter_alle_szenarien_2022_csv.CSV">
-          <value>
-            <Attribute>
-              <option name="separator" value=";" />
-            </Attribute>
-          </value>
-        </entry>
-        <entry key="\source\assets\data\parameter_alle_szenarien_2022_csv_hybrid_version.CSV">
-          <value>
-            <Attribute>
-              <option name="separator" value=";" />
-            </Attribute>
-          </value>
-        </entry>
-        <entry key="\source\assets\data\parameter_alle_szenarien_2022_csv_no_whitespace.CSV">
-          <value>
-            <Attribute>
-              <option name="separator" value=";" />
-            </Attribute>
-          </value>
-        </entry>
-        <entry key="\source\assets\data\parameter_alle_szenarien_2022_csv_no_ws.CSV">
-          <value>
-            <Attribute>
-              <option name="separator" value=";" />
-            </Attribute>
-          </value>
-        </entry>
-        <entry key="\source\assets\data\parameter_alle_szenarien_test_szenario_csv.CSV">
-          <value>
-            <Attribute>
-              <option name="separator" value=";" />
-            </Attribute>
-          </value>
-        </entry>
-        <entry key="\source\assets\data\parameter_scenario_2022 - Kopie (2).CSV">
-          <value>
-            <Attribute>
-              <option name="separator" value=";" />
-            </Attribute>
-          </value>
-        </entry>
-        <entry key="\source\assets\data\parameter_scenario_2022 - Kopie.CSV">
-          <value>
-            <Attribute>
-              <option name="separator" value=";" />
-            </Attribute>
-          </value>
-        </entry>
         <entry key="\source\assets\data\parameter_scenario_2022.CSV">
           <value>
             <Attribute>
@@ -80,31 +31,10 @@
             </Attribute>
           </value>
         </entry>
-        <entry key="\source\assets\icev_co2e_2022_py.CSV">
+        <entry key="\source\assets\data\parameter_scenario_2022_with_targets.CSV">
           <value>
             <Attribute>
               <option name="separator" value=";" />
-            </Attribute>
-          </value>
-        </entry>
-        <entry key="\source\assets\lkw_co2e_bev_2022_csv.CSV">
-          <value>
-            <Attribute>
-              <option name="separator" value=";" />
-            </Attribute>
-          </value>
-        </entry>
-        <entry key="\source\assets\lkw_co2e_icev_2022_csv.CSV">
-          <value>
-            <Attribute>
-              <option name="separator" value=";" />
-            </Attribute>
-          </value>
-        </entry>
-        <entry key="\source\cleaned_data.csv">
-          <value>
-            <Attribute>
-              <option name="separator" value="," />
             </Attribute>
           </value>
         </entry>
