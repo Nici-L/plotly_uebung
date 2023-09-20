@@ -15,7 +15,7 @@ import plotly.express as px
 # todo: Methoden Beschreibungen verbessern
 # todo: autosize in consumption diagram?
 # todo: calculate button farbe ändern und zentrieren, margin um calculator button, margin um parameter menu, farben der diagramme,
-# todo: Methode schreiben die schon summiert und mit emission targets eine eigene kleine series bildet
+# todo: beautify scenario names
 
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.SOLAR], assets_folder=os.getcwd() + 'source/assets')
 
@@ -26,12 +26,8 @@ for file in os.listdir(config.SCENARIO_FOLDER_PATH):
     if file.endswith('.CSV') or file.endswith('.csv'):
         scenario_filenames.append(file)
 print(f"scenario_filenames: {scenario_filenames}")
-# beautify names
 
-# get all necessary data to display initial scenario
-# read in initial scenario data
-# initial_scenario = pd.read_csv(f'{config.SCENARIO_FOLDER_PATH}/{scenario_filenames[0]}', sep=';', decimal=",", thousands='.', encoding="ISO-8859-1", index_col=[0, 1], skipinitialspace=True, header=[3])
-
+# use this in case the csv data has a lot of whitespaces
 # initial_scenario_no_ws = initial_scenario.to_string().strip(' ')
 # count_ws = pd.DataFrame(initial_scenario_no_ws, index=[0,1], columns=[1, 2])
 
@@ -52,50 +48,88 @@ co2e_production_one_car: pd.Series
 co2e_savings_one_car: pd.Series
 
 
-def init_global_variables(selected_scenario_name: str):
-    # read in initial scenario data
-    global selected_scenario
-    selected_scenario = pd.read_csv(f'{config.SCENARIO_FOLDER_PATH}/{selected_scenario_name}', sep=';', decimal=",",
-                                   thousands='.', encoding="ISO-8859-1", index_col=[0, 1], skipinitialspace=True, header=[3])
+def calculate_variables_based_on_scenario(scenario_name: str):
+    selected_scenario = pd.read_csv(f'{config.SCENARIO_FOLDER_PATH}/{scenario_name}', sep=';', decimal=",", thousands='.', encoding="ISO-8859-1", index_col=[0, 1], skipinitialspace=True, header=[3])
     # calculating consumption per year
-    global consumption_per_year_liter
     consumption_per_year_liter = calc.calculate_yearly_consumption_liter(selected_scenario)
-    global consumption_per_year_kwh
     consumption_per_year_kwh = calc.calculate_yearly_consumption_kwh(selected_scenario)
     # add energy supply column
-    global consumption_per_year_liter_with_energy_supply
     consumption_per_year_liter_with_energy_supply = consumption_per_year_liter.to_frame('consumption_manufacturer_l').join(selected_scenario['energysupply'])
-    global consumption_per_year_kWh_with_energy_supply
     consumption_per_year_kWh_with_energy_supply = consumption_per_year_kwh.to_frame('consumption_manufacturer_kWh').join(selected_scenario['energysupply'])
     # calculating co2e ttw per year per car
-    global co2e_ttw_per_car
     co2e_ttw_per_car = calc.get_co2e_usage_ttw_per_car(consumption_per_year_liter_with_energy_supply, consumption_per_year_kWh_with_energy_supply, selected_scenario)
     # calculating co2e ttw per year per segment
-    global co2e_ttw_per_segment
     co2e_ttw_per_segment = calc.get_co2e_usage_ttw_per_segment(co2e_ttw_per_car, selected_scenario)
-    global co2e_ttw_per_segment_df
     co2e_ttw_per_segment_df = co2e_ttw_per_segment.to_frame('co2e')
     # calculating co2e wtw per year per car
-    global co2e_wtw_per_car
     co2e_wtw_per_car = calc.get_co2e_usage_wtw_per_car(consumption_per_year_liter_with_energy_supply, consumption_per_year_kWh_with_energy_supply, selected_scenario)
     # calculating co2e wtw per year per segment
-    global co2e_wtw_per_segment
     co2e_wtw_per_segment = calc.get_co2e_usage_wtw_per_segment(co2e_wtw_per_car, selected_scenario)
-    global co2e_wtw_per_segment_df
     co2e_wtw_per_segment_df = co2e_wtw_per_segment.to_frame('co2e')
     # calculating co2e of production for one car
-    global co2e_production_one_car
     co2e_production_one_car = calc.calculate_production_co2e_per_car(selected_scenario)
     # calculate co2e savings (recycling)
-    global co2e_savings_one_car
     co2e_savings_one_car = calc.calculate_co2e_savings(selected_scenario)
+    results = {
+        "selected_scenario": selected_scenario,
+        "consumption_per_year_liter": consumption_per_year_liter,
+        "consumption_per_year_kwh": consumption_per_year_kwh,
+        "consumption_per_year_liter_with_energy_supply": consumption_per_year_liter_with_energy_supply,
+        "consumption_per_year_kWh_with_energy_supply": consumption_per_year_kWh_with_energy_supply,
+        "co2e_ttw_per_car": co2e_ttw_per_car,
+        "co2e_ttw_per_segment": co2e_ttw_per_segment,
+        "co2e_ttw_per_segment_df": co2e_ttw_per_segment_df,
+        "co2e_wtw_per_car": co2e_wtw_per_car,
+        "co2e_wtw_per_segment": co2e_wtw_per_segment,
+        "co2e_wtw_per_segment_df": co2e_wtw_per_segment_df,
+        "co2e_production_one_car": co2e_production_one_car,
+        "co2e_savings_one_car": co2e_savings_one_car,
+    }
+    return results
+
+
+def init_global_variables(selected_scenario_name: str):
+    calculation_results = calculate_variables_based_on_scenario(selected_scenario_name)
+    global selected_scenario
+    selected_scenario = calculation_results.get("selected_scenario")
+    # calculating consumption per year
+    global consumption_per_year_liter
+    consumption_per_year_liter = calculation_results.get("consumption_per_year_liter")
+    global consumption_per_year_kwh
+    consumption_per_year_kwh = calculation_results.get("consumption_per_year_kwh")
+    # add energy supply column
+    global consumption_per_year_liter_with_energy_supply
+    consumption_per_year_liter_with_energy_supply = calculation_results.get("consumption_per_year_liter_with_energy_supply")
+    global consumption_per_year_kWh_with_energy_supply
+    consumption_per_year_kWh_with_energy_supply = calculation_results.get("consumption_per_year_kWh_with_energy_supply")
+    # calculating co2e ttw per year per car
+    global co2e_ttw_per_car
+    co2e_ttw_per_car = calculation_results.get("co2e_ttw_per_car")
+    # calculating co2e ttw per year per segment
+    global co2e_ttw_per_segment
+    co2e_ttw_per_segment = calculation_results.get("co2e_ttw_per_segment")
+    global co2e_ttw_per_segment_df
+    co2e_ttw_per_segment_df = calculation_results.get("co2e_ttw_per_segment_df")
+    # calculating co2e wtw per year per car
+    global co2e_wtw_per_car
+    co2e_wtw_per_car = calculation_results.get("co2e_wtw_per_car")
+    # calculating co2e wtw per year per segment
+    global co2e_wtw_per_segment
+    co2e_wtw_per_segment = calculation_results.get("co2e_wtw_per_segment")
+    global co2e_wtw_per_segment_df
+    co2e_wtw_per_segment_df = calculation_results.get("co2e_wtw_per_segment_df")
+    # calculating co2e of production for one car
+    global co2e_production_one_car
+    co2e_production_one_car = calculation_results.get("co2e_production_one_car")
+    # calculate co2e savings (recycling)
+    global co2e_savings_one_car
+    co2e_savings_one_car = calculation_results.get("co2e_savings_one_car")
 
 
 init_global_variables(scenario_filenames[3])
 
 
 def get_fig_sum_total_co2e(co2e_series, dataframe):
-    print(dataframe.columns)
     fig_sum_total_co2e = go.Figure(data=[
         go.Bar(
                 x=['co2e'],
@@ -188,7 +222,7 @@ app.layout = dbc.Container([
     dbc.Row([
         dbc.Col([
             html.Div([
-                dbc.Button(id='calculate-button', n_clicks=0, children='calculate', color='secondary', size='lg', class_name='m-3')
+                dbc.Button(id='calculate-button', n_clicks=0, children='calculate', color='success', size='lg', class_name='m-3')
             ])], class_name='align-middle'),
     ]),
     dbc.Row([
@@ -315,7 +349,7 @@ def update_consumption_graph(chosen_segments, chosen_vehicle_class):
     else:
         return no_update    # chosen_vehicle_class, chosen_segments
 
-'''
+
 # callback for scenario comparison
 @app.callback(
     Output('scenario-comparison', 'figure'),
@@ -327,10 +361,11 @@ def update_comparison_graph(chosen_scenario_list):
         chosen_scenario_list = [chosen_scenario_list]
     fig_comparison = go.Figure()
     for scenario in chosen_scenario_list:
-        init_global_variables(scenario)
+        scenario_var = calculate_variables_based_on_scenario(scenario)
         fig_comparison.add_trace(go.Bar(
             y=[scenario],
-            x=[co2e_ttw_per_segment.sum()],
+            x=[scenario_var['co2e_ttw_per_segment'].sum()],
+            # x=[scenario_var.get('co2e_ttw_per_segment').sum ()],
             orientation='h'
         ))
         fig_comparison.update_layout(
@@ -340,13 +375,12 @@ def update_comparison_graph(chosen_scenario_list):
             font_color='white',
             barmode='group',
             autosize=True,
-            # width=500,
-            # height=450,
+            width=800,
+            height=450,
         )
         fig_comparison.update_xaxes(title_text="Comparison between different scenarios")
         fig_comparison.update_yaxes(title_text="Scenarios")
     return fig_comparison
-'''
 
 if __name__ == '__main__':
     app.run(debug=True)

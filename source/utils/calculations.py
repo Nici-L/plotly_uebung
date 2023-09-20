@@ -1,13 +1,13 @@
 import pandas as pd
 
 
-def calculate_yearly_consumption_liter(df_data):
+def calculate_yearly_consumption_liter(df_data: pd.DataFrame):
     consumption_manufacturer_liter_per_km = df_data['consumption_manufacturer_l']/100
     consumption_manufacturer_liter_per_year = consumption_manufacturer_liter_per_km * df_data['mileage']
     return consumption_manufacturer_liter_per_year
 
 
-def calculate_yearly_consumption_kwh(df_data):
+def calculate_yearly_consumption_kwh(df_data: pd.DataFrame):
     consumption_manufacturer_kwh_per_km = df_data['consumption_manufacturer_kWh']/100
     consumption_manufacturer_kwh_per_year = consumption_manufacturer_kwh_per_km * df_data['mileage']
     return consumption_manufacturer_kwh_per_year
