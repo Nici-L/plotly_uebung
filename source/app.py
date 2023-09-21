@@ -8,14 +8,22 @@ import config as config
 import utils.calculations as calc
 import plotly.graph_objects as go
 import plotly.express as px
+import utils.colors_KIT_plotly as clr
 
 
 # init app
 # todo: grafik aufhübschen, Meldung wenn Werte arg klein sind (Modal Button?) (x-mal kleiner als größter Wert) und man sie deshalb nicht sieht, emission targets ergänzen
 # todo: Methoden Beschreibungen verbessern
 # todo: autosize in consumption diagram?
-# todo: calculate button farbe ändern und zentrieren, margin um calculator button, margin um parameter menu, farben der diagramme,
+# todo: calculate button zentrieren, farben der diagramme,
 # todo: beautify scenario names
+# todo: warum werden Bilder nicht angezeigt? app wieder auslagern?
+# todo: LCA ergänzen
+# todo: margin überschrift
+# todo: ausgrauen bei dropdown wenn es option nicht gibt
+# todo: noch bei total amount einfärben wie viel von welchem Antrieb kommt
+# todo: calculate button für viele dropdowns
+# todo: genaue Zahlen an bars ergänzen
 
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.SOLAR], assets_folder=os.getcwd() + 'source/assets')
 
@@ -31,6 +39,36 @@ print(f"scenario_filenames: {scenario_filenames}")
 # initial_scenario_no_ws = initial_scenario.to_string().strip(' ')
 # count_ws = pd.DataFrame(initial_scenario_no_ws, index=[0,1], columns=[1, 2])
 
+map_colors = {
+    ## Vehicles
+    "BEV": clr.orange_base,
+    "HEV-g": clr.maygreen_base,
+    "ICEV-d": clr.blue2_base,
+    "ICEV-g": clr.green1_base,
+    "PHEV-g": clr.purple_base,
+    ## Life cycle phases
+    "Production": clr.blue2_base,
+    "Usage": clr.green1_base,
+    "Recycling": clr.gray_dark25,
+    ## Fuels
+    "Super E10": clr.green4_dark25,
+    "Super E20": clr.green4_base,
+    "Super Plus/Super 95": clr.green4_dark50,
+    "BtL-Gasoline": clr.green4_bright80,
+    "Diesel Premium/Diesel B7": clr.blue5_dark50,
+    "PtL-Diesel": clr.blue5_bright80,
+    "HVO": clr.cyan_bright80,
+}
+
+colors = [
+    clr.orange_base,
+    clr.maygreen_base,
+    clr.blue2_base,
+    clr.green1_base,
+    clr.purple_base,
+    clr.blue5_base,
+    clr.gray_base,
+]
 
 # initialize global variables
 selected_scenario: pd.DataFrame
@@ -126,7 +164,7 @@ def init_global_variables(selected_scenario_name: str):
     co2e_savings_one_car = calculation_results.get("co2e_savings_one_car")
 
 
-init_global_variables(scenario_filenames[3])
+init_global_variables(scenario_filenames[0])
 
 
 def get_fig_sum_total_co2e(co2e_series, dataframe):
@@ -134,11 +172,12 @@ def get_fig_sum_total_co2e(co2e_series, dataframe):
         go.Bar(
                 x=['co2e'],
                 y=[co2e_series.sum()],
+                marker_color=clr.green1_base,
             ),
     ],
             layout={  # dictionary 'key':'value'
                 'barmode': 'relative',
-                'title': 'CO2e of different vehicle segments in kg',
+                'title': 'total CO2e emitted by passenger cars <br> per year in kg',
                 'template': 'ggplot2',
                 'plot_bgcolor': '#002b36',  # color Solar stylesheet
                 'paper_bgcolor': '#002b36',
@@ -152,17 +191,29 @@ def get_fig_sum_total_co2e(co2e_series, dataframe):
     emission_target_2030_only_pkw = emission_target_2030 * 0.68
     fig_sum_total_co2e.add_trace(
         go.Bar(
-            x=['co2e_2030'],
+            x=['co2e target 2030'],
             y=[emission_target_2030_only_pkw],
+            marker_color=clr.maygreen_base,
         )
     )
+    fig_sum_total_co2e.update_layout(
+        font=dict(
+            family="verdana",
+            size=11,
+            color="antiquewhite"
+        )
+    )
+    # fig_sum_total_co2e.update_traces(width=0.5)
     return fig_sum_total_co2e
 
 
 def get_fig_co2e_segment_all_vehicle_classes(co2e_dataframe, chosen_segment):
     x_val = co2e_dataframe.loc[(slice(None), f"{chosen_segment}"), "co2e"]
-    fig_co2e_segment_all_vehicle_classes = px.bar(x_val.to_frame('co2e'), x=x_val.to_frame('co2e').index.get_level_values(0), y='co2e')
-    fig_co2e_segment_all_vehicle_classes .update_layout(
+    fig_co2e_segment_all_vehicle_classes = px.bar(x_val.to_frame('co2e'), x=x_val.to_frame('co2e').index.get_level_values(0), y='co2e', color_discrete_map=map_colors)
+    fig_co2e_segment_all_vehicle_classes.update_layout(
+            title='CO2e per drivechain per year in kg',
+            yaxis_title="co2e in kg",
+            xaxis_title="vehicle class",
             plot_bgcolor='#002b36',  # color Solar stylesheet
             paper_bgcolor='#002b36',
             font_color='white',
@@ -174,15 +225,61 @@ def get_fig_co2e_segment_all_vehicle_classes(co2e_dataframe, chosen_segment):
 
 def get_fig_consumption(co2e_dataframe, chosen_segments, chosen_vehicle_class):
     consumption_segments = co2e_dataframe.loc[(chosen_vehicle_class, chosen_segments), "consumption_manufacturer_l"].to_frame('consumption')
-    fig_consumption = px.bar(data_frame=consumption_segments, y=consumption_segments.index.get_level_values(0), x='consumption', orientation='h', barmode='group', color=consumption_segments.index.get_level_values(1))
+    fig_consumption = px.bar(data_frame=consumption_segments, y=consumption_segments.index.get_level_values(0), x='consumption', orientation='h', barmode='group', color=consumption_segments.index.get_level_values(1), color_discrete_map=map_colors, text_auto='.2s')
     fig_consumption.update_layout(
+            title='Fuel consumption per car in liter per 100 km',
+            yaxis_title="vehicle class",
+            legend_title="segment",
             plot_bgcolor='#002b36',  # color Solar stylesheet
             paper_bgcolor='#002b36',
             font_color='white',
             barmode='group',
-            autosize=True,
     )
+    fig_consumption.update_xaxes(range=[0, 15], autorange=False)
     return fig_consumption
+
+
+def get_fig_consumption_kwh(co2e_dataframe, chosen_segments, chosen_vehicle_class):
+    consumption_segments = co2e_dataframe.loc[(chosen_vehicle_class, chosen_segments), "consumption_manufacturer_kWh"].to_frame('consumption')
+    fig_consumption_kwh = px.bar(data_frame=consumption_segments, y=consumption_segments.index.get_level_values(0), x='consumption', orientation='h', barmode='group', color=consumption_segments.index.get_level_values(1), color_discrete_map=map_colors)
+    fig_consumption_kwh.update_layout(
+            title='Electricity consumption per car in kWh per 100 km',
+            yaxis_title="vehicle class",
+            legend_title="segment",
+            plot_bgcolor='#002b36',  # color Solar stylesheet
+            paper_bgcolor='#002b36',
+            font_color='white',
+            barmode='group',
+    )
+    fig_consumption_kwh.update_xaxes(range=[0, 25], autorange=False)
+    return fig_consumption_kwh
+
+
+def get_fig_lca_waterfall(chosen_scenario, chosen_lca, chosen_vehicle_class, chosen_segment):
+    scenario_var = calculate_variables_based_on_scenario(chosen_scenario)
+    co2e_per_single_car_usage = scenario_var[f"co2e_{chosen_lca}_per_car"].to_frame('co2e')
+    co2e_per_single_car_production = scenario_var['co2e_production_one_car'].to_frame('co2e')
+    co2e_per_single_car_savings = scenario_var['co2e_savings_one_car'].to_frame('co2e')
+    co2e_per_single_car_total = co2e_per_single_car_production.loc[(chosen_vehicle_class, chosen_segment), 'co2e'] + co2e_per_single_car_usage.loc[(chosen_vehicle_class, chosen_segment), 'co2e'] + co2e_per_single_car_savings.loc[(chosen_vehicle_class, chosen_segment), 'co2e']
+    # total_co2_per_car = scenario_var
+    fig_lca_waterfall = go.Figure(go.Waterfall(
+        name="lca values", orientation="v",
+        measure=["relative", "relative", "relative", "total"],
+        x=["production", "usage", "recycling", "total co2e"],
+        textposition="outside",
+        text=["", "", "", ""],
+        y=[co2e_per_single_car_production.loc[(chosen_vehicle_class, chosen_segment), 'co2e'], co2e_per_single_car_usage.loc[(chosen_vehicle_class, chosen_segment), 'co2e'], co2e_per_single_car_savings.loc[(chosen_vehicle_class, chosen_segment), 'co2e'], co2e_per_single_car_total],
+        connector={"line": {"color": 'rgba(0,150,130,1)'}},
+    ))
+    fig_lca_waterfall.update_layout(
+        title="LCA of a single car",
+        showlegend=True,
+        plot_bgcolor='#002b36',  # color Solar stylesheet
+        paper_bgcolor='#002b36',
+        font_color='white'
+    )
+    return fig_lca_waterfall
+
 
 # y_val = initial_scenario.loc[(slice(None), "Mini"), "consumption_manufacturer_l"]
 # y_val_2 = initial_scenario.loc[(slice(None), "Kleinwagen"), "consumption_manufacturer_l"]
@@ -196,7 +293,7 @@ app.layout = dbc.Container([
     ]),
     dbc.Row([
         html.Div([
-            dcc.Dropdown(options=scenario_filenames, id='scenario-dropdown', value=scenario_filenames[3]),
+            dcc.Dropdown(options=scenario_filenames, id='scenario-dropdown', value=scenario_filenames[0]),
         ]),
     ]),
     dbc.Row([
@@ -214,7 +311,7 @@ app.layout = dbc.Container([
                            dbc.Button(id='co2e_battery_production-button', n_clicks=0, children='co2e_battery_production', color='primary', class_name='m-2'),
                            dbc.Button(id='co2e_savings_glider-button', n_clicks=0, children='co2e_savings_glider', color='primary', class_name='m-2'),
                            dbc.Button(id='co2e_savings_battery-button', n_clicks=0, children='co2e_savings_battery', color='primary', class_name='m-2'),
-                    ], title='parameter menu accordion'),
+                    ], title='parameter menu accordion', class_name='m-3'),
                 ], start_collapsed=True,)
             ]),
         ]),
@@ -223,7 +320,8 @@ app.layout = dbc.Container([
         dbc.Col([
             html.Div([
                 dbc.Button(id='calculate-button', n_clicks=0, children='calculate', color='success', size='lg', class_name='m-3')
-            ])], class_name='align-middle'),
+            ])
+        ]),
     ]),
     dbc.Row([
         dbc.Col([
@@ -232,7 +330,6 @@ app.layout = dbc.Container([
                     dbc.Label("Options"),
                     dcc.Dropdown(options=['TtW', 'WtW'], id='display_figure', value='TtW'),
                     dcc.Graph(id='co2e_ttw_barchart', figure=get_fig_sum_total_co2e(co2e_ttw_per_segment, selected_scenario)),
-                    # todo: add germany target
                 ]
             )
         ], width=4
@@ -241,7 +338,7 @@ app.layout = dbc.Container([
             html.Div(
                 children=[
                     dbc.Label("Please select a segment"),
-                    dcc.Dropdown(selected_scenario.index.get_level_values(1).unique(), id='choose-segments', value='Mini', searchable=False),
+                    dcc.Dropdown(options=selected_scenario.index.get_level_values(1).unique(), id='choose-segments', value='Mini', searchable=False),
                     dcc.Dropdown(options=['TtW', 'WtW'], id='TtW_vehicle_class_fig', value='TtW'),
                     dcc.Graph(id='co2e_ttw_barchart_car', figure=get_fig_co2e_segment_all_vehicle_classes(co2e_ttw_per_segment_df, 'Kleinwagen'))
                 ]
@@ -251,10 +348,11 @@ app.layout = dbc.Container([
             html.Div(
                 children=[
                     dbc.Label("Please select a vehicle class and segment"),
-                    dcc.Dropdown(selected_scenario.index.get_level_values(0).unique(), id='consumption-vehicle-class', multi=True, value=['icev']),
-                    dcc.Dropdown(selected_scenario.index.get_level_values(1).unique(), id='consumption-segment', multi=True, value=['Mini', 'Kleinwagen']),
+                    dcc.Dropdown(options=['kWh', 'liter'], id='kWh-or-liter', value='liter'),
+                    dcc.Dropdown(options=selected_scenario.index.get_level_values(0).unique(), id='consumption-vehicle-class', multi=True, value=['icev']),
+                    dcc.Dropdown(options=selected_scenario.index.get_level_values(1).unique(), id='consumption-segment', multi=True, value=['Mini', 'Kleinwagen']),
                     dcc.Graph(id='fig-consumption', figure=get_fig_consumption(selected_scenario, ['Mini', 'Kleinwagen'], 'icev'))
-                ] #todo: Dropdown for electricity consumption
+                ]
             )
         ]),
     ]),
@@ -264,8 +362,20 @@ app.layout = dbc.Container([
                 children=[
                     dbc.Label('Choose the scenarios'),
                     dcc.Dropdown(options=scenario_filenames, id='scenario-dropdown-comparison', multi=True, value=scenario_filenames[0]),
-                    dcc.Graph(id='scenario-comparison')
-                ]
+                    dcc.Graph(id='scenario-comparison', figure={})
+                ],  className="six columns"
+            )
+        ]),
+        dbc.Col([
+            html.Div(
+              children=[
+                  dbc.Label('chose the car'),
+                  dcc.Dropdown(options=scenario_filenames, id='scenario-dropdown-lca', value=scenario_filenames[0]),
+                  dcc.Dropdown(options=['TtW', 'WtW'], id='chose_lca', value='TtW'),
+                  dcc.Dropdown(options=selected_scenario.index.get_level_values(0).unique(), id='lca-vehicle-class', value='icev'),
+                  dcc.Dropdown(options=selected_scenario.index.get_level_values(1).unique(), id='lca-segment', value='Mini'),
+                  dcc.Graph(id='lca-waterfall-fig', figure=get_fig_lca_waterfall(scenario_filenames[0], chosen_lca='ttw', chosen_vehicle_class='icev', chosen_segment='Mini'))
+              ],  className="six columns"
             )
         ])
     ])
@@ -287,9 +397,7 @@ def update_graph(n, scenario_chosen):
 
     fig_co2e_segment_all_vehicle_classes = get_fig_co2e_segment_all_vehicle_classes(co2e_ttw_per_segment_df, 'Kleinwagen')
 
-    fig_consumption = get_fig_consumption(selected_scenario, ['Mini', 'Kleinwagen'], 'icev')
-
-    return fig_sum_total_co2e, fig_co2e_segment_all_vehicle_classes, fig_consumption
+    return fig_sum_total_co2e, fig_co2e_segment_all_vehicle_classes
 
 
 # callback for TtW or WtW button
@@ -330,21 +438,34 @@ def update_car_graph(chosen_lc_step, chosen_segment):
 # callback for segment and vehicle class dropdown
 @app.callback(
     Output('fig-consumption', 'figure'),
-    [Input('consumption-segment', 'value'),
+    [Input('kWh-or-liter', 'value'),
+     Input('consumption-segment', 'value'),
      Input('consumption-vehicle-class', 'value')],
     prevent_initial_call=True
 )
-def update_consumption_graph(chosen_segments, chosen_vehicle_class):
-    if chosen_vehicle_class is None or len(chosen_vehicle_class) == 0 and chosen_segments is None or len(chosen_segments) == 0 or None:
+def update_consumption_graph(chosen_unit, chosen_segments, chosen_vehicle_class):
+    if chosen_unit == 'liter' and chosen_vehicle_class is None or len(chosen_vehicle_class) == 0 and chosen_segments is None or len(chosen_segments) == 0 or None:
         return no_update
-    elif len(chosen_vehicle_class) == 0 and len(chosen_segments) == 1:
+    elif chosen_unit == 'liter' and len(chosen_vehicle_class) == 0 and len(chosen_segments) == 1:
         fig_consumption = get_fig_consumption(selected_scenario, chosen_segments, slice(None))
         return fig_consumption
-    elif len(chosen_vehicle_class) >= 1 and len(chosen_segments) == 1:
+    elif chosen_unit == 'liter' and len(chosen_vehicle_class) >= 1 and len(chosen_segments) == 1:
         fig_consumption = get_fig_consumption(selected_scenario, chosen_segments, chosen_vehicle_class)
         return fig_consumption
-    elif len(chosen_vehicle_class) >= 1 and len(chosen_segments) >= 1:
+    elif chosen_unit == 'liter' and len(chosen_vehicle_class) >= 1 and len(chosen_segments) >= 1:
         fig_consumption = get_fig_consumption(selected_scenario, chosen_segments, chosen_vehicle_class)
+        return fig_consumption
+
+    elif chosen_unit == 'kWh' and chosen_vehicle_class is None or len(chosen_vehicle_class) == 0 and chosen_segments is None or len(chosen_segments) == 0 or None:
+        return no_update
+    elif chosen_unit == 'kWh' and len(chosen_vehicle_class) == 0 and len(chosen_segments) == 1:
+        fig_consumption = get_fig_consumption_kwh(selected_scenario, chosen_segments, slice(None))
+        return fig_consumption
+    elif chosen_unit == 'kWh' and len(chosen_vehicle_class) >= 1 and len(chosen_segments) == 1:
+        fig_consumption = get_fig_consumption_kwh(selected_scenario, chosen_segments, chosen_vehicle_class)
+        return fig_consumption
+    elif chosen_unit == 'kWh' and len(chosen_vehicle_class) >= 1 and len(chosen_segments) >= 1:
+        fig_consumption = get_fig_consumption_kwh(selected_scenario, chosen_segments, chosen_vehicle_class)
         return fig_consumption
     else:
         return no_update    # chosen_vehicle_class, chosen_segments
@@ -375,12 +496,24 @@ def update_comparison_graph(chosen_scenario_list):
             font_color='white',
             barmode='group',
             autosize=True,
-            width=800,
-            height=450,
         )
         fig_comparison.update_xaxes(title_text="Comparison between different scenarios")
         fig_comparison.update_yaxes(title_text="Scenarios")
     return fig_comparison
+
+
+@app.callback(
+    Output('lca-waterfall-fig', 'figure'),
+    [Input('scenario-dropdown-lca', 'value'),
+     Input('chose_lca', 'value'),
+     Input('lca-vehicle-class', 'value'),
+     Input('lca-segment', 'value')]
+)
+def update_waterfall_lca_graph(chosen_scenario, chosen_lca, chosen_vehicle_class, chosen_segment):
+    chosen_lca = str(chosen_lca).lower()
+    fig_lca_waterfall = get_fig_lca_waterfall(chosen_scenario=chosen_scenario, chosen_lca=chosen_lca, chosen_vehicle_class=chosen_vehicle_class, chosen_segment=chosen_segment)
+    return fig_lca_waterfall
+
 
 if __name__ == '__main__':
     app.run(debug=True)

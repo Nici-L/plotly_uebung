@@ -9,7 +9,7 @@ header_images = html.Div([
             width={"size": 2}
         ),
         dbc.Col(  # Column for headline
-            html.H2(children=["CO", html.Sub(2), " Fleet Development Calculator"], className="header1",
+            html.H2(children=["CO", html.Sub(2), " Fleet Development Calculator"], className="header1 m-4",
                     style={'color': '#00876C', 'text-align': 'center'}),
             width={"size": 7}),
         dbc.Col(  # Column for picture
