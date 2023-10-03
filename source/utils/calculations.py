@@ -60,11 +60,11 @@ def get_co2e_usage_ttw_per_car(dataframe_consumption_per_year_liter_with_energy_
     for ind in dataframe_with_co2e_values.index:
         row = dataframe_with_co2e_values.loc[ind]
         if row['energysupply'] == 'gasoline':
-            calculated_co2e = dataframe_consumption_per_year_liter_with_energy_supply['consumption_manufacturer_l'][ind] * (row['share_E5_totalgasoline'] * row['co2e_E5_TtW'] + row['share_E10_totalgasoline'] * row['co2e_E10_TtW'])
+            calculated_co2e = dataframe_consumption_per_year_liter_with_energy_supply['consumption_manufacturer_l'][ind] * (row['share_E5_totalgasoline'] * row['co2e_E5_TtW'] + row['share_E10_totalgasoline'] * row['co2e_E10_TtW']+ row['share_bioliq_totalgasoline'] * row['co2e_bioliq_TtW']+ row['share_ptl_totalgasoline'] * row['co2e_ptl_TtW'])
         elif row['energysupply'] == 'diesel':
-            calculated_co2e = dataframe_consumption_per_year_liter_with_energy_supply['consumption_manufacturer_l'][ind] * (row['share_D7_totaldiesel'] * row['co2e_D7_TtW'])    # + dataframe_og['share_hvo_totaldiesel'] * dataframe_og['co2e_hvo_TtW'])
+            calculated_co2e = dataframe_consumption_per_year_liter_with_energy_supply['consumption_manufacturer_l'][ind] * (row['share_D7_totaldiesel'] * row['co2e_D7_TtW'] + row['share_hvo_totaldiesel'] * row['co2e_hvo_TtW'])
         elif row['energysupply'] == 'battery':
-            calculated_co2e = dataframe_consumption_per_year_kWh_with_energy_supply['consumption_manufacturer_kWh'][ind] * row['co2e_electricity_TtW']  # * (dataframe_og['share_elecricity_totaldiesel'] * dataframe_og['co2e_electricity_TtW'])
+            calculated_co2e = dataframe_consumption_per_year_kWh_with_energy_supply['consumption_manufacturer_kWh'][ind] * row['co2e_electricity_TtW']
         elif row['energysupply'] == 'hybrid':
             calculated_co2e = dataframe_consumption_per_year_liter_with_energy_supply['consumption_manufacturer_l'][ind] * (row['share_E5_totalgasoline'] * row['co2e_E5_TtW'] + row['share_E10_totalgasoline'] * row['co2e_E10_TtW']) + dataframe_consumption_per_year_kWh_with_energy_supply['consumption_manufacturer_kWh'][ind] * row['co2e_electricity_TtW']
         else:
@@ -132,9 +132,9 @@ def get_co2e_usage_wtw_per_car(dataframe_consumption_per_year_liter_with_energy_
     for ind in dataframe_with_co2e_values.index:
         row = dataframe_with_co2e_values.loc[ind]
         if row['energysupply'] == 'gasoline':
-            calculated_co2e = dataframe_consumption_per_year_liter_with_energy_supply['consumption_manufacturer_l'][ind] * (row['share_E5_totalgasoline'] * row['co2e_E5_WtW'] + row['share_E10_totalgasoline'] * row['co2e_E10_WtW'])
+            calculated_co2e = dataframe_consumption_per_year_liter_with_energy_supply['consumption_manufacturer_l'][ind] * (row['share_E5_totalgasoline'] * row['co2e_E5_WtW'] + row['share_E10_totalgasoline'] * row['co2e_E10_WtW'] + row['share_bioliq_totalgasoline'] * row['co2e_bioliq_WtW']+ row['share_ptl_totalgasoline'] * row['co2e_ptl_WtW'])
         elif row['energysupply'] == 'diesel':
-            calculated_co2e = dataframe_consumption_per_year_liter_with_energy_supply['consumption_manufacturer_l'][ind] * (row['share_D7_totaldiesel'] * row['co2e_D7_WtW'])    # + dataframe_og['share_hvo_totaldiesel'] * dataframe_og['co2e_hvo_TtW'])
+            calculated_co2e = dataframe_consumption_per_year_liter_with_energy_supply['consumption_manufacturer_l'][ind] * (row['share_D7_totaldiesel'] * row['co2e_D7_WtW'] + row['share_hvo_totaldiesel'] * row['co2e_hvo_WtW'])
         elif row['energysupply'] == 'battery':
             calculated_co2e = dataframe_consumption_per_year_kWh_with_energy_supply['consumption_manufacturer_kWh'][ind] * row['co2e_electricity_WtW']
         elif row['energysupply'] == 'hybrid':
@@ -198,7 +198,7 @@ def calculate_production_co2e_per_car(dataframe):
     calculated_co2e_production_series = pd.Series(index=dataframe.index)
     for ind in dataframe.index:
         row = dataframe.loc[ind]
-        calculated_co2e_production = row['glider_weight'] * row['co2e_production'] + (row['power_electric_engine']+ row['power_electric_engine_2'])*row['co2e_electric_engine'] + row['battery_capacity_brutto']*row['co2e_battery_production'] + row['weight_electric_drivechain']*row['co2e_drivechain']
+        calculated_co2e_production = row['glider_weight'] * row['co2e_production'] + (row['power_electric_engine'] + row['power_electric_engine_2'])*row['co2e_electric_engine'] + row['battery_capacity_brutto']*row['co2e_battery_production'] + row['weight_electric_drivechain']*row['co2e_drivechain']
         calculated_co2e_production_series[ind] = calculated_co2e_production
     return calculated_co2e_production_series
 

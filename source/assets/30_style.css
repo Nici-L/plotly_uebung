@@ -1,0 +1,76 @@
+.calculate-button {
+    border-bottom: thin #f1e9e9 solid;
+
+}
+.Dropdown-2 .Select-value-label {
+    color: white !important;
+}
+.Dropdown-2 .Select-control {
+    background-color: #002b36;
+}
+.Dropdown-2 .VirtualizedSelectOption {
+    background-color: #002b36;
+    color: white;
+ }
+
+.callback-trigger-heading {
+    border: 2px solid #00876c;
+    border-radius: 7px;
+    text-align: center;
+    font-family: "Lucida Console", "Courier New", monospace;
+    background-color: #00876c;
+    opacity:0.3;
+    color:white;
+    font-size: large;
+}
+
+.collapse-button {
+    background-color: #00876c;
+    border: 2px solid #00876c;
+
+}
+
+.active, .collapse-button:hover {
+  background-color: #00876c;
+    border: 2px solid #046551;
+}
+
+.collapse-div1 {
+    text-align: center;
+}
+
+.small-number-warning {
+    background-color: rgba(255, 25, 25, 0.45);
+}
+
+.button {
+     background-color: #00876c;
+     border: 2px solid #046551;
+}
+
+.active, .button:hover {
+  background-color: #00876c;
+    border: 2px solid #046551;
+}
+
+.form-check-input:checked {
+    background-color: #00876c;
+    border-color: #00876c;
+}
+
+.btn-primary {
+    --bs-btn-color: #fff;
+    --bs-btn-bg: #00876c;
+    --bs-btn-border-color: #00876c;
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: #00876c;
+    --bs-btn-hover-border-color: #00876c;
+    --bs-btn-focus-shadow-rgb: 192, 155, 38;
+    --bs-btn-active-color: #fff;
+    --bs-btn-active-bg: #00876c;
+    --bs-btn-active-border-color: #00876c;
+    --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+    --bs-btn-disabled-color: #fff;
+    --bs-btn-disabled-bg: #00876c;
+    --bs-btn-disabled-border-color: #00876c;
+}

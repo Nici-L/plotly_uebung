@@ -24,6 +24,48 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\source\assets\data\Scenario_2022.CSV">
+          <value>
+            <Attribute>
+              <option name="separator" value=";" />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\source\assets\data\Scenario_2022_co2werte.CSV">
+          <value>
+            <Attribute>
+              <option name="separator" value=";" />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\source\assets\data\Scenario_2022_update.CSV">
+          <value>
+            <Attribute>
+              <option name="separator" value=";" />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\source\assets\data\Scenario_bestCase.CSV">
+          <value>
+            <Attribute>
+              <option name="separator" value=";" />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\source\assets\data\Scenario_bestCase_update.CSV">
+          <value>
+            <Attribute>
+              <option name="separator" value=";" />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\source\assets\data\Scenario_worstCase.CSV">
+          <value>
+            <Attribute>
+              <option name="separator" value=";" />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\source\assets\data\parameter_scenario_2022.CSV">
           <value>
             <Attribute>
@@ -45,7 +87,7 @@
             </Attribute>
           </value>
         </entry>
-        <entry key="\source\assets\data\parameter_scenario_2022_with_targets.CSV">
+        <entry key="\source\assets\data\scenario_WorstCase_update.CSV">
           <value>
             <Attribute>
               <option name="separator" value=";" />
