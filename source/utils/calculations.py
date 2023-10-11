@@ -1,4 +1,6 @@
 import pandas as pd
+import numpy
+from matplotlib import pyplot as plt
 
 
 def calculate_yearly_consumption_liter(df_data: pd.DataFrame):
@@ -224,8 +226,49 @@ def calculate_co2e_savings(dataframe):
     calculated_co2e_savings_series = pd.Series(index=dataframe.index)
     for ind in dataframe.index:
         row = dataframe.loc[ind]
-        calculated_co2e_savings = row['glider_weight']* row['co2e_savings_glider'] + row['battery_weight']*row['co2e_savings_battery']
+        calculated_co2e_savings = row['glider_weight'] * row['co2e_savings_glider'] + row['battery_weight']*row['co2e_savings_battery']
         calculated_co2e_savings_series[ind] = calculated_co2e_savings
+        print(f"recycling aus calculations:{calculated_co2e_savings_series}")
     return calculated_co2e_savings_series
+
+
+def calc_quadratic_regression(x, y, x_new):
+    """
+           Calculate the regression line for the co2e per year from 2020 until 2050.
+
+           :param x: an array containing the years
+
+           :type x: numpy.array
+
+           :param y: an array containing the values matching the years from the x-array
+
+           :type y: numpy.array
+
+           :param x_new: the starting and end year and the stepsize
+           :type x_new:
+
+           :return y_new: an array containing all the newly calculated values
+           :rtype: pd.Series
+
+           This function is a regression function for calculating the co2e of different years because we only have the co2e of the year 2030 and 2045.
+
+           Note: At this time the regression is a quadratic regression however the input values are a linear regression so this might have to change in the future depending on the given scenario.
+           """
+    plt.plot(x, y)
+    plt.show()
+
+    # polynom approximation
+    [a, b, c] = numpy.polyfit(x=x, y=y, deg=2)
+
+    print(f"a: {a}, b: {b}, c: {c}")
+    print(f"x : {x}")
+    print(f"y : {y}")
+    print(f"x_new : {x_new}")
+    y_new = a * x_new[:] ** 2 + b * x_new[:] + c
+    plt.plot(x_new, y_new)
+    plt.show()
+    # polynom approximation
+    # vectorized calculation for entire array
+    return y_new
 
 

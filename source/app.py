@@ -15,19 +15,17 @@ import plotly.graph_objects as go
 import plotly.express as px
 import utils.colors_KIT_plotly as clr
 from datetime import datetime
+from init_app import app
 
 
 # init app
 # todo: grafik aufhübschen, Meldung wenn Werte arg klein sind (Modal Button?) (x-mal kleiner als größter Wert) und man sie deshalb nicht sieht, emission targets ergänzen
 # todo: Methoden Beschreibungen verbessern
-# todo: LCA ergänzen
 # todo: ausgrauen bei dropdown wenn es option nicht gibt
 # todo: genaue Zahlen an bars ergänzen
-# todo: parameter menu wird noch nicht zurückgesetzt wenn wieder szenario ausgewählt wird
 # todo: hover labels für Fahrzeugmodell
-# todo:consumption input feld macht keinen sinn
 
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.SOLAR], assets_url_path='/source/assets')
+# app = dash.Dash(__name__, external_stylesheets=[dbc.themes.SOLAR], assets_url_path='/source/assets')
 
 # get scenario options
 # read all available csv files names
@@ -76,7 +74,7 @@ colors = [
     clr.gray_base,
 ]
 
-# initialize global variables
+# type hint global variables (simplifies code completion)
 selected_scenario: pd.DataFrame
 consumption_per_year_liter: pd.Series
 consumption_per_year_kwh: pd.Series
@@ -94,6 +92,8 @@ co2e_production_one_car: pd.Series
 co2e_savings_one_car: pd.Series
 
 
+# initialize the variables
+# todo: add docstring
 def calculate_variables_based_on_scenario(scenario_df: pd.DataFrame):    # (scenario_name: str):
     # calculating consumption per year
     consumption_per_year_liter = calc.calculate_yearly_consumption_liter(scenario_df)
@@ -117,6 +117,7 @@ def calculate_variables_based_on_scenario(scenario_df: pd.DataFrame):    # (scen
     co2e_production_one_car = calc.calculate_production_co2e_per_car(scenario_df)
     # calculate co2e savings (recycling)
     co2e_savings_one_car = calc.calculate_co2e_savings(scenario_df)
+    # dictionary for return variables to save variables but not write them into global variables
     results = {
         "selected_scenario": scenario_df,
         "consumption_per_year_liter": consumption_per_year_liter,
@@ -137,6 +138,7 @@ def calculate_variables_based_on_scenario(scenario_df: pd.DataFrame):    # (scen
     return results
 
 
+# function overwrites global variables
 def init_global_variables(selected_scenario_name: str = None, scenario_df: pd.DataFrame = None):
     global selected_scenario
     if scenario_df is None:
@@ -207,11 +209,6 @@ def get_fig_sum_total_co2e(co2e_series, dataframe):
                 'font_color': 'white'
                 }
             )
-    print(f"co2 series: {co2e_series}")
-    print(f"icev summe:{co2e_series['icev'].sum()}")
-    print(f"icev summe:{co2e_series['hev'].sum ()}")
-    print(f"icev summe:{co2e_series['phev'].sum ()}")
-    print(f"icev summe:{co2e_series['bev'].sum ()}")
     fig_sum_total_co2e.update_yaxes(range=[0, 100000000000], autorange=False)
     fig_sum_total_co2e.update_layout(
         title=dict(text="Total CO<sub>2e</sub> emitted by passenger cars per year in kg", font=dict(size=15, color="lightgray", family="verdana")),
@@ -300,19 +297,19 @@ def get_fig_lca_waterfall(chosen_scenario_name, chosen_lca, chosen_vehicle_class
     if is_recycling_displayed is True:
         print("is_recycling_displayed is True")
         co2e_per_single_car_total = co2e_per_single_car_production.loc[(chosen_vehicle_class, chosen_segment), 'co2e'] + co2e_per_single_car_usage.loc[(chosen_vehicle_class, chosen_segment), 'co2e'] + co2e_per_single_car_savings.loc[(chosen_vehicle_class, chosen_segment), 'co2e']
-        y_value = [co2e_per_single_car_production.loc[(chosen_vehicle_class, chosen_segment), 'co2e'], co2e_per_single_car_usage.loc[(chosen_vehicle_class, chosen_segment), 'co2e'], co2e_per_single_car_savings.loc[(chosen_vehicle_class, chosen_segment), 'co2e'], co2e_per_single_car_total]
+        y_value = [co2e_per_single_car_production.loc[(chosen_vehicle_class, chosen_segment), 'co2e'], (co2e_per_single_car_usage.loc[(chosen_vehicle_class, chosen_segment), 'co2e'])*10.1, co2e_per_single_car_savings.loc[(chosen_vehicle_class, chosen_segment), 'co2e'], co2e_per_single_car_total]
         x_value = ["production", "usage", "recycling", "total co2e"]
         measure = ["relative", "relative", "relative", "total"]
     elif is_recycling_displayed is False:
         print("is_recycling_displayed is False")
         co2e_per_single_car_total = co2e_per_single_car_production.loc[(chosen_vehicle_class, chosen_segment), 'co2e'] + co2e_per_single_car_usage.loc[(chosen_vehicle_class, chosen_segment), 'co2e']
-        y_value = [co2e_per_single_car_production.loc[(chosen_vehicle_class, chosen_segment), 'co2e'], co2e_per_single_car_usage.loc[(chosen_vehicle_class, chosen_segment), 'co2e'], co2e_per_single_car_total]
+        y_value = [co2e_per_single_car_production.loc[(chosen_vehicle_class, chosen_segment), 'co2e'], (co2e_per_single_car_usage.loc[(chosen_vehicle_class, chosen_segment), 'co2e'])*10.1, co2e_per_single_car_total]
         x_value = ["production", "usage", "total co2e"]
         measure = ["relative", "relative", "total"]
     else:
         print("nix!")
         co2e_per_single_car_total = co2e_per_single_car_production.loc[(chosen_vehicle_class, chosen_segment), 'co2e'] + co2e_per_single_car_usage.loc[(chosen_vehicle_class, chosen_segment), 'co2e'] + co2e_per_single_car_savings.loc[(chosen_vehicle_class, chosen_segment), 'co2e']
-        y_value = [co2e_per_single_car_production.loc[(chosen_vehicle_class, chosen_segment), 'co2e'], co2e_per_single_car_usage.loc[(chosen_vehicle_class, chosen_segment), 'co2e'], co2e_per_single_car_savings.loc[(chosen_vehicle_class, chosen_segment), 'co2e'], co2e_per_single_car_total]
+        y_value = [co2e_per_single_car_production.loc[(chosen_vehicle_class, chosen_segment), 'co2e'], (co2e_per_single_car_usage.loc[(chosen_vehicle_class, chosen_segment), 'co2e'])*10.1, co2e_per_single_car_savings.loc[(chosen_vehicle_class, chosen_segment), 'co2e'], co2e_per_single_car_total]
         x_value = ["production", "usage", "recycling", "total co2e"]
         measure = ["relative", "relative", "relative", "total"]
 
@@ -338,27 +335,35 @@ def get_fig_lca_waterfall(chosen_scenario_name, chosen_lca, chosen_vehicle_class
     return fig_lca_waterfall
 
 
-def calc_quadratic_regression(x, y, x_new):
-    plt.plot(x, y)
-    plt.show()
+def get_yearly_co2_fig():
+    x_since_1990 = [1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+                    2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018]
+    y_since_1990 = [110000000000, 112200000000, 116280000000, 119000000000, 116280000000, 119000000000, 119000000000,
+                    119000000000, 121000000000, 125000000000, 123000000000, 120000000000, 119000000000, 114920000000,
+                    114240000000, 108000000000, 106000000000, 104000000000, 104000000000, 104000000000, 104000000000,
+                    104000000000, 104000000000, 107440000000, 108000000000, 109000000000, 111000000000, 113000000000,
+                    110000000000]
+    x = numpy.array ([2019, 2030, 2045])
+    y = numpy.array ([111520000000, selected_scenario['co2e_2030'].iloc[0], selected_scenario['co2e_2045'].iloc[0]])
+    x_new = numpy.arange (2019, 2050, 1)
+    x_array_combined = numpy.concatenate ((x_since_1990, x_new))
+    print (f"x array {x_array_combined}")
+    yearly_co2e_regression = calc.calc_quadratic_regression (x=x, y=y, x_new=x_new)
+    y_array_combined = numpy.concatenate((y_since_1990, yearly_co2e_regression))
 
-    # polynom approximation
-    [a, b, c] = numpy.polyfit(x=x, y=y, deg=2)
-
-    print(f"a: {a}, b: {b}, c: {c}")
-    print(f"x : {x}")
-    print(f"y : {y}")
-    print(f"x_new : {x_new}")
-    y_new = a * x_new[:] ** 2 + b * x_new[:] + c
-    plt.plot(x_new, y_new)
-    plt.show()
-    # polynom approximation
-    # vectorized calculation for entire array
-    return y_new
-
-
-def get_yearly_co2_fig(regression_array, x_array):
-    yearly_co2e_fig = go.Figure([go.Bar(x=x_array, y=regression_array, marker_color=clr.green1_base)])
+    yearly_co2e_fig = go.Figure(data=go.Bar(x=x_array_combined, y=y_array_combined, marker_color=clr.green1_base))
+    yearly_co2e_fig.add_trace(
+        go.Scatter(
+            x=x_array_combined[-30:],
+            y=numpy.cumsum(y_array_combined[-30:]),
+            yaxis='y2',
+        )
+    )
+    yearly_co2e_fig.add_shape(type="line", xref="paper", yref="y2", x0=0, y0=1220000000000, x1=1, y1=1220000000000, line=dict(
+        color="red",
+        dash="dash"
+    ),
+                              )
     yearly_co2e_fig.update_layout(
         title='Co<sub>2e</sub> of passenger cars in Germany from 1990 until 2050',
         yaxis_title="co2e in kg",
@@ -367,22 +372,21 @@ def get_yearly_co2_fig(regression_array, x_array):
         paper_bgcolor='#002b36',
         font_color='white',
         barmode='relative',
-        hovermode="x unified")
+        hovermode="x unified",
+        yaxis=dict(
+            title=dict(text="Total number of diners"),
+            side="left",
+        ),
+        yaxis2=dict(
+            title=dict(text="Total bill amount"),
+            side="right",
+            range=[0, 2250000000000],
+            overlaying="y",
+            tickmode="sync",
+        ),
+        showlegend=False,
+    )
     return yearly_co2e_fig
-
-
-x_since_1990 = [1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018]
-y_since_1990 = [110000000000, 112200000000, 116280000000, 119000000000, 116280000000, 119000000000, 119000000000, 119000000000, 121000000000, 125000000000, 123000000000, 120000000000, 119000000000, 114920000000, 114240000000, 108000000000, 106000000000, 104000000000, 104000000000, 104000000000, 104000000000, 104000000000, 104000000000,107440000000, 108000000000,109000000000, 111000000000,113000000000,110000000000]
-x = numpy.array([2019, 2030, 2045])
-y = numpy.array([111520000000, selected_scenario['co2e_2030'].iloc[0], selected_scenario['co2e_2045'].iloc[0]])
-x_new = numpy.arange(2019, 2050, 1)
-x_array_combined = numpy.concatenate((x_since_1990, x_new))
-print(f"x array {x_array_combined}")
-
-yearly_co2e_regression = calc_quadratic_regression(x=x, y=y, x_new=x_new)
-
-y_array_combined = numpy.concatenate((y_since_1990, yearly_co2e_regression))
-print(f"y combined{y_array_combined}")
 
 
 # initial dashboard layout
@@ -407,58 +411,52 @@ app.layout = dbc.Container([
                            dbc.Button(['share of E5 on total gasoline',
                                        dbc.Badge("%", color="light", text_color="primary", className="ms-1")],
                                       id='share_E5_totalgasoline_button', n_clicks=0, color='primary', class_name='button m-2'),
-                           dcc.Input(id="share_E5", type="number", placeholder="share E5", min=0, max=100, step=1, style={'marginRight':'10px'}, value=90),
+                           dcc.Input(id="share_E5", type="number", placeholder="share E5", style={'marginRight':'10px'}, value=90),
 
                            dbc.Button(['share of E10 on total gasoline',
                                        dbc.Badge("%", color="light", text_color="primary", className="ms-1")],
                                       id='share_E10_totalgasoline_button', n_clicks=0, color='primary', class_name='button m-2'),
-                           dcc.Input(id="share_E10", type="number", placeholder="share E10", min=0, max=100, step=1, style={'marginRight': '10px'}, value=10),
+                           dcc.Input(id="share_E10", type="number", placeholder="share E10", style={'marginRight': '10px'}, value=10),
 
                            dbc.Button(['share of diesel',
                                        dbc.Badge("%", color="light", text_color="primary", className="ms-1")],
                                       id='share_diesel_button', n_clicks=0, color='primary', class_name='button m-2'),
-                           dcc.Input(id="share_diesel", type="number", placeholder="share diesel", min=0, max=100, step=1, style={'marginRight': '10px'}, value=100),
+                           dcc.Input(id="share_diesel", type="number", placeholder="share diesel", style={'marginRight': '10px'}, value=100),
 
                            dbc.Button(['co2e emitted during production of electricity',
                                        dbc.Badge("g/kWh", color="light", text_color="primary", className="ms-1")],
                                       id='co2e_electricity_button', n_clicks=0, color='primary', class_name='button m-2'),
-                           dcc.Input(id="co2e_electricity", type="number", placeholder="co2e electricity", min=0, max=1000, step=0.1, style={'marginRight': '10px'}, value=400),
+                           dcc.Input(id="co2e_electricity", type="number", placeholder="co2e electricity", style={'marginRight': '10px'}, value=400),
 
                            dbc.Button(['vehicle stock',
                                        dbc.Badge("mio", color="light", text_color="primary", className="ms-1")],
                                       id='vehicle_stock_button', n_clicks=0, color='primary', class_name='button m-2'),
-                           dcc.Input(id="vehicle_stock", type="number", placeholder="vehicle stock", min=1, max=50000000, step=1, style={'marginRight': '10px'}, value=48),
+                           dcc.Input(id="vehicle_stock", type="number", placeholder="vehicle stock",  style={'marginRight': '10px'}, value=48),
 
                            dbc.Button(['share icev',
                                        dbc.Badge("%", color="light", text_color="primary", className="ms-1")],
                                       id='share_icev_button', n_clicks=0, color='primary', class_name='button m-2'),
-                           dcc.Input(id="share_icev", type="number", placeholder="share icev", min=0, max=100, step=1, style={'marginRight': '10px'}, value=70),
+                           dcc.Input(id="share_icev", type="number", placeholder="share icev",style={'marginRight': '10px'}, value=70),
 
                            dbc.Button(['share hev',
                                        dbc.Badge("%", color="light", text_color="primary", className="ms-1")],
                                       id='share_hev_button', n_clicks=0, color='primary', class_name='button m-2'),
-                           dcc.Input(id="share_hev", type="number", placeholder="share hev", min=0, max=100, step=1, style={'marginRight': '10px'}, value=10),
+                           dcc.Input(id="share_hev", type="number", placeholder="share hev", style={'marginRight': '10px'}, value=10),
 
                            dbc.Button(['share phev',
                                        dbc.Badge("%", color="light", text_color="primary", className="ms-1")],
                                       id='share_phev_button', n_clicks=0, color='primary', class_name='button m-2'),
-                           dcc.Input(id="share_phev", type="number", placeholder="share phev", min=0, max=100, step=1, style={'marginRight': '10px'}, value=10),
+                           dcc.Input(id="share_phev", type="number", placeholder="share phev",  style={'marginRight': '10px'}, value=10),
 
                            dbc.Button(['share bev',
                                        dbc.Badge("%", color="light", text_color="primary", className="ms-1")],
                                       id='share_bev_button', n_clicks=0, color='primary', class_name='button m-2'),
-                           dcc.Input(id="share_bev", type="number", placeholder="share_bev", min=0, max=100, step=1, style={'marginRight': '10px'}, value=10),
+                           dcc.Input(id="share_bev", type="number", placeholder="share_bev", style={'marginRight': '10px'}, value=10),
 
                            html.Div([
-                               dbc.Button(id='calculate-button', n_clicks=0, children='calculate', color='success', size='lg', class_name='m-3 calculate-button')
+                               dbc.Button(id='calculate-button', n_clicks=0, children='calculate', color='success', size='lg', class_name='m-3 calculate-button'),
+                               dbc.Button(id='reset-button', n_clicks=0, children='reset', color='success', size='lg', class_name='m-3 calculate-button')
                            ]),
-                           # dbc.Button(id='glider_weight-button', n_clicks=0, children='glider_weight', color='primary', class_name='m-2'),
-                           # dbc.Button(id='co2e_production-button', n_clicks=0, children='co2e_production', color='primary', class_name='m-2'),
-                           # dbc.Button(id='battery_capacity_brutto-button', n_clicks=0, children='battery_capacity_brutto', color='primary', class_name='m-2'),
-                           # dbc.Button(id='co2e_battery_production-button', n_clicks=0, children='co2e_battery_production', color='primary', class_name='m-2'),
-                           # dbc.Button(id='co2e_savings_glider-button', n_clicks=0, children='co2e_savings_glider', color='primary', class_name='m-2'),
-                           # dbc.Button(id='co2e_savings_battery-button', n_clicks=0, children='co2e_savings_battery', color='primary', class_name='m-2'),
-                           # dbc.Button(id='co2e_E5_TtW-button', n_clicks=0, children='co2e_E5_TtW', color='primary', class_name='m-2'),
                     ], title='parameter menu', class_name='m-3'),
                 ], start_collapsed=True, className='parameter-Accordion')
             ]),
@@ -629,7 +627,7 @@ app.layout = dbc.Container([
     ]),
     dbc.Row([
         dbc.Col([
-            dcc.Graph(id='co2e_over-the_years_fig', figure=get_yearly_co2_fig(regression_array=y_array_combined, x_array=x_array_combined))
+            dcc.Graph(id='co2e_over_the_years_fig', figure=get_yearly_co2_fig())
         ])
     ])
 ])
@@ -663,7 +661,7 @@ def update_scenario_selection(scenario_chosen):
     ],
     prevent_initial_call=True
 )
-def update_graph(n, share_E5, share_E10, share_diesel, co2e_electricity, vehicle_stock, share_icev, share_hev, share_phev, share_bev):
+def update_parameter_menu(n, share_E5, share_E10, share_diesel, co2e_electricity, vehicle_stock, share_icev, share_hev, share_phev, share_bev):
     share_hev = share_hev/100
     share_icev = share_icev/100
     share_phev = share_phev/100
@@ -690,6 +688,102 @@ def update_graph(n, share_E5, share_E10, share_diesel, co2e_electricity, vehicle
 
     return f'you have selected your own custom scenario at {datetime.now().strftime("%d.%m.%y %H:%M:%S")}'
 
+@app.callback(
+    # State(component_id='input_consumption', component_property='value'),
+    [Output(component_id='share_E5', component_property='value', allow_duplicate=True),
+    Output(component_id='share_E10', component_property='value', allow_duplicate=True),
+    Output(component_id='share_diesel', component_property='value', allow_duplicate=True),
+    Output(component_id='co2e_electricity', component_property='value', allow_duplicate=True),
+    Output(component_id='vehicle_stock', component_property='value', allow_duplicate=True),
+    Output(component_id='share_icev', component_property='value', allow_duplicate=True),
+    Output(component_id='share_hev', component_property='value', allow_duplicate=True),
+    Output(component_id='share_phev', component_property='value', allow_duplicate=True),
+    Output(component_id='share_bev', component_property='value', allow_duplicate=True), ],
+    Input(component_id='output_input_div', component_property='children'),
+
+    prevent_initial_call=True
+)
+def update_parameter_menu(scenario_selection_string):
+
+    init_global_variables(selected_scenario_name=None, scenario_df=selected_scenario)
+
+    vehicle_classes_list_without_lkw = list(dict.fromkeys(selected_scenario.index.get_level_values(0).to_list()))
+    vehicle_classes_list_without_lkw.remove('lkw')
+
+    share_E5 = selected_scenario.loc[(vehicle_classes_list_without_lkw, slice(None)), 'share_E5_totalgasoline'].unique()
+    share_E10 = selected_scenario.loc[(vehicle_classes_list_without_lkw, slice(None)), 'share_E10_totalgasoline'].unique()
+    share_diesel = selected_scenario.loc[(vehicle_classes_list_without_lkw, slice(None)), 'share_D7_totaldiesel'].unique()
+    co2e_electricity = selected_scenario.loc[(vehicle_classes_list_without_lkw, slice(None)), 'co2e_electricity_WtW'].unique()
+    share_icev = ((1/selected_scenario['vehicle_stock'].sum()) * selected_scenario.loc[('icev', slice(None)), 'vehicle_stock']).sum()
+    share_hev = ((1 / selected_scenario['vehicle_stock'].sum()) * selected_scenario.loc[('hev', slice(None)), 'vehicle_stock']).sum()
+    share_bev = ((1 / selected_scenario['vehicle_stock'].sum()) * selected_scenario.loc[('bev', slice(None)), 'vehicle_stock']).sum()
+    share_phev = ((1 / selected_scenario['vehicle_stock'].sum()) * selected_scenario.loc[('phev', slice(None)), 'vehicle_stock']).sum()
+
+    # selected_scenario.loc[('hev', slice(None)), 'vehicle_stock'] = (vehicle_stock * share_hev) * selected_scenario.loc[('hev', slice(None)), 'shareontotalvehicles']
+    # selected_scenario.loc[('phev', slice(None)), 'vehicle_stock'] = (vehicle_stock * share_phev) * selected_scenario.loc[('phev', slice(None)), 'shareontotalvehicles']
+    # selected_scenario.loc[('bev', slice(None)), 'vehicle_stock'] = (vehicle_stock * share_bev) * selected_scenario.loc[('bev', slice(None)), 'shareontotalvehicles']
+
+
+    share_hev = share_hev*100
+    share_icev = share_icev*100
+    share_phev = share_phev*100
+    share_bev = int(share_bev*100)
+    share_diesel = int(share_diesel*100)
+    share_E5 = int(share_E5*100)
+    share_E10 = int(share_E10*100)
+    vehicle_stock = selected_scenario['vehicle_stock'].sum()
+    co2e_electricity = int(co2e_electricity * 1000)
+
+    return share_E5, share_E10, share_diesel, co2e_electricity, vehicle_stock, share_icev, share_hev, share_phev, share_bev
+
+
+@app.callback(
+    # State(component_id='input_consumption', component_property='value'),
+    [Output(component_id='share_E5', component_property='value'),
+    Output(component_id='share_E10', component_property='value'),
+    Output(component_id='share_diesel', component_property='value'),
+    Output(component_id='co2e_electricity', component_property='value'),
+    Output(component_id='vehicle_stock', component_property='value'),
+    Output(component_id='share_icev', component_property='value'),
+    Output(component_id='share_hev', component_property='value'),
+    Output(component_id='share_phev', component_property='value'),
+    Output(component_id='share_bev', component_property='value'),],
+    Input(component_id='reset-button', component_property='n_clicks'),
+    State(component_id='scenario-dropdown', component_property='value'),
+    prevent_initial_call=True
+)
+def update_parameter_menu(scenario_selection_string, scenario_chosen):
+    init_global_variables(selected_scenario_name=scenario_chosen)
+
+    vehicle_classes_list_without_lkw = list(dict.fromkeys(selected_scenario.index.get_level_values(0).to_list()))
+    vehicle_classes_list_without_lkw.remove('lkw')
+
+    share_E5 = selected_scenario.loc[(vehicle_classes_list_without_lkw, slice(None)), 'share_E5_totalgasoline'].unique()
+    share_E10 = selected_scenario.loc[(vehicle_classes_list_without_lkw, slice(None)), 'share_E10_totalgasoline'].unique()
+    share_diesel = selected_scenario.loc[(vehicle_classes_list_without_lkw, slice(None)), 'share_D7_totaldiesel'].unique()
+    co2e_electricity = selected_scenario.loc[(vehicle_classes_list_without_lkw, slice(None)), 'co2e_electricity_WtW'].unique()
+    share_icev = ((1/selected_scenario['vehicle_stock'].sum()) * selected_scenario.loc[('icev', slice(None)), 'vehicle_stock']).sum()
+    share_hev = ((1 / selected_scenario['vehicle_stock'].sum()) * selected_scenario.loc[('hev', slice(None)), 'vehicle_stock']).sum()
+    share_bev = ((1 / selected_scenario['vehicle_stock'].sum()) * selected_scenario.loc[('bev', slice(None)), 'vehicle_stock']).sum()
+    share_phev = ((1 / selected_scenario['vehicle_stock'].sum()) * selected_scenario.loc[('phev', slice(None)), 'vehicle_stock']).sum()
+
+    # selected_scenario.loc[('hev', slice(None)), 'vehicle_stock'] = (vehicle_stock * share_hev) * selected_scenario.loc[('hev', slice(None)), 'shareontotalvehicles']
+    # selected_scenario.loc[('phev', slice(None)), 'vehicle_stock'] = (vehicle_stock * share_phev) * selected_scenario.loc[('phev', slice(None)), 'shareontotalvehicles']
+    # selected_scenario.loc[('bev', slice(None)), 'vehicle_stock'] = (vehicle_stock * share_bev) * selected_scenario.loc[('bev', slice(None)), 'shareontotalvehicles']
+
+
+    share_hev = share_hev*100
+    share_icev = share_icev*100
+    share_phev = share_phev*100
+    share_bev = share_bev*100
+    share_diesel = int(share_diesel*100)
+    share_E5 = int(share_E5*100)
+    share_E10 = int(share_E10*100)
+    vehicle_stock = selected_scenario['vehicle_stock'].sum()
+    co2e_electricity = int(co2e_electricity * 1000)
+
+    return share_E5, share_E10, share_diesel, co2e_electricity, vehicle_stock, share_icev, share_hev, share_phev, share_bev
+
 
 # callback for TtW or WtW button
 @app.callback(
@@ -699,8 +793,6 @@ def update_graph(n, share_E5, share_E10, share_diesel, co2e_electricity, vehicle
     prevent_initital_call=True
 )
 def update_total_co2e_graph(display_figure, input):
-    print(input)
-
     if display_figure == 'TtW':
         fig_sum_total_co2e = get_fig_sum_total_co2e(co2e_ttw_per_segment, selected_scenario)
         return fig_sum_total_co2e
@@ -830,6 +922,16 @@ def update_waterfall_lca_graph(scenario_selection, n, is_recycling_displayed, ch
     print(f"is_recycling_displayed: {is_recycling_displayed}")
     fig_lca_waterfall = get_fig_lca_waterfall(chosen_scenario_name=chosen_scenario, chosen_lca=chosen_lca, chosen_vehicle_class=chosen_vehicle_class, chosen_segment=chosen_segment, is_recycling_displayed=is_recycling_displayed)
     return fig_lca_waterfall
+
+
+@app.callback(
+    Output("co2e_over_the_years_fig", "figure"),
+    Input(component_id='output_input_div', component_property='children'),
+    prevent_initital_call=True
+)
+def update_total_co2e_graph(input):
+    yearly_co2_fig = get_yearly_co2_fig()
+    return yearly_co2_fig
 
 
 @app.callback(
