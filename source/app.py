@@ -1,12 +1,7 @@
 import dash
 import dash_bootstrap_components as dbc
 import os
-
-import scipy as scipy
 from matplotlib import pyplot as plt
-
-import numpy
-import pandas as pd
 import source.components.Tab_1.layout_header as header
 from dash import html, dcc, Output, Input, State, no_update
 import config as config
@@ -14,8 +9,9 @@ import utils.calculations as calc
 import plotly.graph_objects as go
 import plotly.express as px
 import utils.colors_KIT_plotly as clr
-from datetime import datetime
 from init_app import app
+import source.components.Tab_1.figures as fig
+from source.components.Tab_1 import callbacks as tab1_callbacks
 
 
 # init app
@@ -43,58 +39,11 @@ print(f"scenario_filenames: {scenario_filenames}")
 # initial_scenario_no_ws = initial_scenario.to_string().strip(' ')
 # count_ws = pd.DataFrame(initial_scenario_no_ws, index=[0,1], columns=[1, 2])
 
-map_colors = {
-    ## Vehicles
-    "bev": clr.orange_base,
-    "hev": clr.maygreen_base,
-    "icev": clr.blue2_base,
-    "ICEV-g": clr.green1_base,
-    "phev": clr.purple_base,
-    ## Life cycle phases
-    "production": clr.blue2_base,
-    "usage": clr.green1_base,
-    "recycling": clr.gray_dark25,
-    ## Fuels
-    "Super E10": clr.green4_dark25,
-    "Super E20": clr.green4_base,
-    "Super Plus/Super 95": clr.green4_dark50,
-    "BtL-Gasoline": clr.green4_bright80,
-    "Diesel Premium/Diesel B7": clr.blue5_dark50,
-    "PtL-Diesel": clr.blue5_bright80,
-    "HVO": clr.cyan_bright80,
-}
-
-colors = [
-    clr.orange_base,
-    clr.maygreen_base,
-    clr.blue2_base,
-    clr.green1_base,
-    clr.purple_base,
-    clr.blue5_base,
-    clr.gray_base,
-]
-
-# type hint global variables (simplifies code completion)
-selected_scenario: pd.DataFrame
-consumption_per_year_liter: pd.Series
-consumption_per_year_kwh: pd.Series
-consumption_per_year_liter_with_energy_supply: pd.Series
-consumption_per_year_kWh_with_energy_supply: pd.Series
-co2e_ttw_per_car: pd.Series
-co2e_ttw_per_car_df: pd.DataFrame
-co2e_ttw_per_segment: pd.Series
-co2e_ttw_per_segment_df: pd.DataFrame
-co2e_wtw_per_car: pd.Series
-co2e_wtw_per_car_df: pd.DataFrame
-co2e_wtw_per_segment: pd.Series
-co2e_wtw_per_segment_df: pd.DataFrame
-co2e_production_one_car: pd.Series
-co2e_savings_one_car: pd.Series
 
 
 # initialize the variables
 # todo: add docstring
-def calculate_variables_based_on_scenario(scenario_df: pd.DataFrame):    # (scenario_name: str):
+'''def calculate_variables_based_on_scenario(scenario_df: pd.DataFrame):    # (scenario_name: str):
     # calculating consumption per year
     consumption_per_year_liter = calc.calculate_yearly_consumption_liter(scenario_df)
     consumption_per_year_kwh = calc.calculate_yearly_consumption_kwh(scenario_df)
@@ -282,6 +231,37 @@ def get_fig_consumption_kwh(co2e_dataframe, chosen_segments, chosen_vehicle_clas
     return fig_consumption_kwh
 
 
+def get_fig_production_comparison(chosen_lca, chosen_scenario_name_one, chosen_scenario_name_two):
+
+    chosen_scenario_one_df = pd.read_csv (f'{config.SCENARIO_FOLDER_PATH}/{chosen_scenario_name_one}', sep=';', decimal=",",
+                                      thousands='.', encoding="ISO-8859-1", index_col=[0, 1], skipinitialspace=True, header=[3])
+    scenario_var = calculate_variables_based_on_scenario(chosen_scenario_one_df)
+    co2e_per_single_car_usage_one = scenario_var[f"co2e_{chosen_lca}_per_car"].to_frame('co2e')
+    co2e_per_single_car_production_one = scenario_var['co2e_production_one_car'].to_frame('co2e')
+    print(co2e_per_single_car_production_one)
+
+    chosen_scenario_two_df = pd.read_csv (f'{config.SCENARIO_FOLDER_PATH}/{chosen_scenario_name_two}', sep=';', decimal=",",
+                                      thousands='.', encoding="ISO-8859-1", index_col=[0, 1], skipinitialspace=True, header=[3])
+    scenario_var = calculate_variables_based_on_scenario(chosen_scenario_two_df)
+    co2e_per_single_car_usage_two = scenario_var[f"co2e_{chosen_lca}_per_car"].to_frame('co2e')
+    co2e_per_single_car_production_two = scenario_var['co2e_production_one_car'].to_frame('co2e')
+
+    fig_production_comparison = make_subplots(rows=2, cols=1)
+
+    fig_production_comparison.add_trace(go.Scatter(
+        x=['co2e'],
+        y=[co2e_per_single_car_production_one],
+    ), row=1, col=1)
+
+    fig_production_comparison.add_trace(go.Scatter(
+        x=['co2e'],
+        y=[co2e_per_single_car_production_two],
+    ), row=2, col=1)
+
+    fig_production_comparison.update_layout(height=600, width=600, title_text="Stacked Subplots")
+    return fig_production_comparison
+
+
 def get_fig_lca_waterfall(chosen_scenario_name, chosen_lca, chosen_vehicle_class, chosen_segment, is_recycling_displayed):
     chosen_scenario_df = pd.read_csv(f'{config.SCENARIO_FOLDER_PATH}/{chosen_scenario_name}', sep=';', decimal=",",
                                      thousands='.', encoding="ISO-8859-1", index_col=[0, 1], skipinitialspace=True,
@@ -346,8 +326,8 @@ def get_yearly_co2_fig():
     x = numpy.array ([2019, 2030, 2045])
     y = numpy.array ([111520000000, selected_scenario['co2e_2030'].iloc[0], selected_scenario['co2e_2045'].iloc[0]])
     x_new = numpy.arange (2019, 2050, 1)
-    x_array_combined = numpy.concatenate ((x_since_1990, x_new))
-    print (f"x array {x_array_combined}")
+    x_array_combined = numpy.concatenate((x_since_1990, x_new))
+    # print (f"x array {x_array_combined}")
     yearly_co2e_regression = calc.calc_quadratic_regression (x=x, y=y, x_new=x_new)
     y_array_combined = numpy.concatenate((y_since_1990, yearly_co2e_regression))
 
@@ -388,7 +368,7 @@ def get_yearly_co2_fig():
     )
     return yearly_co2e_fig
 
-
+'''
 # initial dashboard layout
 app.layout = dbc.Container([
     dbc.Row([
@@ -478,7 +458,7 @@ app.layout = dbc.Container([
                 children=[
                     dbc.Label("Select a LCA calculation"),
                     dcc.Dropdown(options=['TtW', 'WtW'], id='display_figure', value='TtW', className='Dropdown-2'),
-                    dcc.Graph(id='co2e_ttw_barchart', figure=get_fig_sum_total_co2e(co2e_ttw_per_segment, selected_scenario), className='mt-5'),
+                    dcc.Graph(id='co2e_ttw_barchart', figure=fig.get_fig_sum_total_co2e(fig.co2e_ttw_per_segment, fig.selected_scenario), className='mt-5'),
                 ]
             ),
             html.Div(
@@ -504,10 +484,10 @@ app.layout = dbc.Container([
                 children=[
                     dbc.Label("Select a segment and calculation"),
                     dbc.Alert("In case of small numbers hover over the graph!", color="danger", dismissable=True, className='small-number-warning'),
-                    dcc.Dropdown(options=selected_scenario.index.get_level_values(1).unique(), id='choose-segments', value='Mini', searchable=False, className='Dropdown-2'),
+                    dcc.Dropdown(options=fig.selected_scenario.index.get_level_values(1).unique(), id='choose-segments', value='Mini', searchable=False, className='Dropdown-2'),
                     dcc.Dropdown(options=['one car', 'all vehicles'], id='one_car_dropdown', value='all vehicles', className='Dropdown-2'),
                     dcc.Dropdown(options=['TtW', 'WtW'], id='TtW_vehicle_class_fig', value='TtW', className='Dropdown-2'),
-                    dcc.Graph(id='co2e_ttw_barchart_car', figure=get_fig_co2e_segment_all_vehicle_classes(co2e_ttw_per_segment_df, 'Kleinwagen'), className='mt-4')
+                    dcc.Graph(id='co2e_ttw_barchart_car', figure=fig.get_fig_co2e_segment_all_vehicle_classes(fig.co2e_ttw_per_segment_df, 'Kleinwagen'), className='mt-4')
                 ]
             ),
             html.Div(
@@ -536,9 +516,9 @@ app.layout = dbc.Container([
                     children=[
                         dbc.Label("Select a vehicle class and segment"),
                         dcc.Dropdown(options=['kWh', 'liter'], id='kWh-or-liter', value='liter', className='Dropdown-2'),
-                        dcc.Dropdown(options=selected_scenario.index.get_level_values(0).unique(), id='consumption-vehicle-class', multi=True, value=['icev'], className='Dropdown-2'),
-                        dcc.Dropdown(options=selected_scenario.index.get_level_values(1).unique(), id='consumption-segment', multi=True, value=['Mini', 'Kleinwagen'], className='Dropdown-2'),
-                        dcc.Graph(id='fig-consumption', figure=get_fig_consumption(selected_scenario, ['Mini', 'Kleinwagen'], 'icev')),
+                        dcc.Dropdown(options=fig.selected_scenario.index.get_level_values(0).unique(), id='consumption-vehicle-class', multi=True, value=['icev'], className='Dropdown-2'),
+                        dcc.Dropdown(options=fig.selected_scenario.index.get_level_values(1).unique(), id='consumption-segment', multi=True, value=['Mini', 'Kleinwagen'], className='Dropdown-2'),
+                        dcc.Graph(id='fig-consumption', figure=fig.get_fig_consumption(fig.selected_scenario, ['Mini', 'Kleinwagen'], 'icev')),
                         html.Div(
                             [
                                 dbc.Button(
@@ -599,11 +579,11 @@ app.layout = dbc.Container([
                   dbc.Label('Select the car you want to see a detailed LCA of'),
                   dcc.Dropdown(options=scenario_filenames, id='scenario-dropdown-lca', value=scenario_filenames[0].get('value'), className='Dropdown-2'),
                   dcc.Dropdown(options=['TtW', 'WtW'], id='chose_lca', value='TtW', className='Dropdown-2'),
-                  dcc.Dropdown(options=selected_scenario.index.get_level_values(0).unique(), id='lca-vehicle-class', value='icev', className='Dropdown-2'),
-                  dcc.Dropdown(options=selected_scenario.index.get_level_values(1).unique(), id='lca-segment', value='Mini', className='Dropdown-2'),
+                  dcc.Dropdown(options=fig.selected_scenario.index.get_level_values(0).unique(), id='lca-vehicle-class', value='icev', className='Dropdown-2'),
+                  dcc.Dropdown(options=fig.selected_scenario.index.get_level_values(1).unique(), id='lca-segment', value='Mini', className='Dropdown-2'),
                   dbc.Switch(label='Include recycling', value=True, id='recycling-option', className='recycling_toggle_switch'),
                   dbc.Button(id='selection-button', n_clicks=0, children='apply selection', color='success', size='m', class_name='m-3 selection-button'),
-                  dcc.Graph(id='lca-waterfall-fig', figure=get_fig_lca_waterfall(scenario_filenames[0].get('value'), chosen_lca='ttw', chosen_vehicle_class='icev', chosen_segment='Mini', is_recycling_displayed=True))
+                  dcc.Graph(id='lca-waterfall-fig', figure=fig.get_fig_lca_waterfall(scenario_filenames[0].get('value'), chosen_lca='ttw', chosen_vehicle_class='icev', chosen_segment='Mini', is_recycling_displayed=True))
               ]
             ),
             html.Div(
@@ -627,12 +607,17 @@ app.layout = dbc.Container([
     ]),
     dbc.Row([
         dbc.Col([
-            dcc.Graph(id='co2e_over_the_years_fig', figure=get_yearly_co2_fig())
+            dcc.Graph(id='fig_production_comparison', figure=fig.get_fig_production_comparison(chosen_lca='ttw', chosen_scenario_name_one=scenario_filenames[0].get('value'), chosen_scenario_name_two=scenario_filenames[1].get('value')))
+        ])
+    ]),
+    dbc.Row([
+        dbc.Col([
+            dcc.Graph(id='co2e_over_the_years_fig', figure=fig.get_yearly_co2_fig())
         ])
     ])
 ])
 
-
+'''
 # callback for scenario dropdown
 @app.callback(
     Output(component_id='output_input_div', component_property='children', allow_duplicate=True),
@@ -997,10 +982,11 @@ def toggle_collapse(n, is_open):
 def toggle_modal(n1, is_open):
     if n1:
         return not is_open
-    return is_open
+    return is_open'''
 
 
 if __name__ == '__main__':
+    tab1_callbacks.register_callbacks(app)
     app.run(debug=True)
 
 # todo:  https://dash.plotly.com/background-callbacks#:~:text=debug%3DTrue)-,Example%202%3A%20Disable%20Button%20While%20Callback%20Is%20Running,-Notice%20how%20in

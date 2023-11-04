@@ -1,10 +1,42 @@
-'''import plotly.graph_objects as go
+import plotly.graph_objects as go
 import plotly.express as px
 import source.utils.colors_KIT_plotly as clr
 import pandas as pd
 import source.utils.calculations as calc
 import source.config as config
 import numpy
+import os
+from plotly.subplots import make_subplots
+
+
+scenario_filenames = []
+for file in os.listdir(config.SCENARIO_FOLDER_PATH):
+    if file.endswith('.CSV') or file.endswith('.csv'):
+        # scenario_filenames.append(file)
+        scenario_filenames.append({
+            'value': file,
+            'label': file.replace('_', ' ').replace('.CSV', '').replace('.csv', '')
+        })
+print(f"scenario_filenames: {scenario_filenames}")
+
+
+# type hint global variables (simplifies code completion)
+selected_scenario: pd.DataFrame
+consumption_per_year_liter: pd.Series
+consumption_per_year_kwh: pd.Series
+consumption_per_year_liter_with_energy_supply: pd.Series
+consumption_per_year_kWh_with_energy_supply: pd.Series
+co2e_ttw_per_car: pd.Series
+co2e_ttw_per_car_df: pd.DataFrame
+co2e_ttw_per_segment: pd.Series
+co2e_ttw_per_segment_df: pd.DataFrame
+co2e_wtw_per_car: pd.Series
+co2e_wtw_per_car_df: pd.DataFrame
+co2e_wtw_per_segment: pd.Series
+co2e_wtw_per_segment_df: pd.DataFrame
+co2e_production_one_car: pd.Series
+co2e_savings_one_car: pd.Series
+
 
 map_colors = {
     ## Vehicles
@@ -38,8 +70,33 @@ colors = [
 ]
 
 
-# the following functions are for creating the graphs
 def calculate_variables_based_on_scenario(scenario_df: pd.DataFrame):    # (scenario_name: str):
+    """
+    Calculate various variables based on a given scenario represented as a DataFrame.
+
+    :param scenario_df: A DataFrame containing data for the scenario.
+    :type scenario_df: pd.DataFrame
+
+    :return: A dictionary containing the following calculated variables:
+        - "selected_scenario": The input scenario DataFrame.
+        - "consumption_per_year_liter": Yearly consumption in liters.
+        - "consumption_per_year_kwh": Yearly consumption in kilowatt-hours.
+        - "consumption_per_year_liter_with_energy_supply": Yearly consumption in liters with energy supply data.
+        - "consumption_per_year_kWh_with_energy_supply": Yearly consumption in kilowatt-hours with energy supply data.
+        - "co2e_ttw_per_car": CO2 equivalent emissions per car for the scenario.
+        - "co2e_ttw_per_car_df": DataFrame of CO2 equivalent emissions per car.
+        - "co2e_ttw_per_segment": CO2 equivalent emissions per segment for the scenario.
+        - "co2e_ttw_per_segment_df": DataFrame of CO2 equivalent emissions per segment.
+        - "co2e_wtw_per_car": CO2 equivalent emissions per car for well-to-wheel analysis.
+        - "co2e_wtw_per_car_df": DataFrame of CO2 equivalent emissions per car for well-to-wheel.
+        - "co2e_wtw_per_segment": CO2 equivalent emissions per segment for well-to-wheel analysis.
+        - "co2e_wtw_per_segment_df": DataFrame of CO2 equivalent emissions per segment for well-to-wheel.
+        - "co2e_production_one_car": CO2 equivalent emissions for the production of one car.
+        - "co2e_savings_one_car": CO2 equivalent emissions savings through recycling.
+    :rtype: dict
+
+    The function calculates and compiles these variables and returns them in a dictionary.
+    """
     # calculating consumption per year
     consumption_per_year_liter = calc.calculate_yearly_consumption_liter(scenario_df)
     consumption_per_year_kwh = calc.calculate_yearly_consumption_kwh(scenario_df)
@@ -62,6 +119,7 @@ def calculate_variables_based_on_scenario(scenario_df: pd.DataFrame):    # (scen
     co2e_production_one_car = calc.calculate_production_co2e_per_car(scenario_df)
     # calculate co2e savings (recycling)
     co2e_savings_one_car = calc.calculate_co2e_savings(scenario_df)
+    # dictionary for return variables to save variables but not write them into global variables
     results = {
         "selected_scenario": scenario_df,
         "consumption_per_year_liter": consumption_per_year_liter,
@@ -82,7 +140,35 @@ def calculate_variables_based_on_scenario(scenario_df: pd.DataFrame):    # (scen
     return results
 
 
+# function overwrites global variables
 def init_global_variables(selected_scenario_name: str = None, scenario_df: pd.DataFrame = None):
+    """
+     Initialize global variables based on the selected scenario and calculation results.
+
+     :param selected_scenario_name: The name of the selected scenario (file name).
+     :type selected_scenario_name: str
+
+     :param scenario_df: A pandas DataFrame containing scenario data (optional if selected_scenario_name is provided).
+     :type scenario_df: pd.DataFrame
+
+     This function initializes the following global variables based on the selected scenario and calculation results:
+
+     - global selected_scenario: The selected scenario DataFrame.
+     - global consumption_per_year_liter: Yearly consumption in liters.
+     - global consumption_per_year_kwh: Yearly consumption in kilowatt-hours.
+     - global consumption_per_year_liter_with_energy_supply: Yearly consumption in liters with energy supply data.
+     - global consumption_per_year_kWh_with_energy_supply: Yearly consumption in kilowatt-hours with energy supply data.
+     - global co2e_ttw_per_car: CO2 equivalent emissions per car for the scenario.
+     - global co2e_ttw_per_car_df: DataFrame of CO2 equivalent emissions per car.
+     - global co2e_ttw_per_segment: CO2 equivalent emissions per segment for the scenario.
+     - global co2e_ttw_per_segment_df: DataFrame of CO2 equivalent emissions per segment.
+     - global co2e_wtw_per_car: CO2 equivalent emissions per car for well-to-wheel analysis.
+     - global co2e_wtw_per_car_df: DataFrame of CO2 equivalent emissions per car for well-to-wheel.
+     - global co2e_wtw_per_segment: CO2 equivalent emissions per segment for well-to-wheel analysis.
+     - global co2e_wtw_per_segment_df: DataFrame of CO2 equivalent emissions per segment for well-to-wheel.
+     - global co2e_production_one_car: CO2 equivalent emissions for the production of one car.
+     - global co2e_savings_one_car: CO2 equivalent emissions savings through recycling.
+     """
     global selected_scenario
     if scenario_df is None:
         selected_scenario = pd.read_csv(f'{config.SCENARIO_FOLDER_PATH}/{selected_scenario_name}', sep=';', decimal=",",
@@ -129,6 +215,10 @@ def init_global_variables(selected_scenario_name: str = None, scenario_df: pd.Da
     global co2e_savings_one_car
     co2e_savings_one_car = calculation_results.get("co2e_savings_one_car")
 
+
+init_global_variables(scenario_filenames[0].get('value'))
+
+
 def get_fig_sum_total_co2e(co2e_series, dataframe):
     y_icev_sum = co2e_series['icev'].sum()
     y_hev_sum = co2e_series['hev'].sum()
@@ -154,20 +244,18 @@ def get_fig_sum_total_co2e(co2e_series, dataframe):
         margin=dict(l=20, r=20, t=80, b=20)
     )
     emission_target_2030 = dataframe['new_emission_targets_germany_2030_fleet'].iloc[0]
-    emission_target_2030_only_pkw = emission_target_2030 * 0.68
     fig_sum_total_co2e.add_trace(
         go.Bar(
             x=['Co<sub>2e</sub> target 2030 Germany'],
-            y=[emission_target_2030_only_pkw],
+            y=[emission_target_2030],
             marker_color=clr.green1_base,
             name='target 2030',
-            text=int(emission_target_2030_only_pkw*(10**(-9)))
+            text=int(emission_target_2030*(10**(-9)))
         )
     )
     fig_sum_total_co2e.update_traces(width=0.4)
     # fig_sum_total_co2e.add_annotation(x=['co2e 2022'], y=[y_icev_sum], text="mio t", showarrow=True)
 
-    # fig_sum_total_co2e.update_traces(width=0.5)
     return fig_sum_total_co2e
 
 
@@ -219,6 +307,37 @@ def get_fig_consumption_kwh(co2e_dataframe, chosen_segments, chosen_vehicle_clas
     )
     fig_consumption_kwh.update_xaxes(range=[0, 25], autorange=False)
     return fig_consumption_kwh
+
+
+def get_fig_production_comparison(chosen_lca, chosen_scenario_name_one, chosen_scenario_name_two):
+
+    chosen_scenario_one_df = pd.read_csv (f'{config.SCENARIO_FOLDER_PATH}/{chosen_scenario_name_one}', sep=';', decimal=",",
+                                      thousands='.', encoding="ISO-8859-1", index_col=[0, 1], skipinitialspace=True, header=[3])
+    scenario_var = calculate_variables_based_on_scenario(chosen_scenario_one_df)
+    co2e_per_single_car_usage_one = scenario_var[f"co2e_{chosen_lca}_per_car"].to_frame('co2e')
+    co2e_per_single_car_production_one = scenario_var['co2e_production_one_car'].to_frame('co2e')
+
+
+    chosen_scenario_two_df = pd.read_csv (f'{config.SCENARIO_FOLDER_PATH}/{chosen_scenario_name_two}', sep=';', decimal=",",
+                                      thousands='.', encoding="ISO-8859-1", index_col=[0, 1], skipinitialspace=True, header=[3])
+    scenario_var = calculate_variables_based_on_scenario(chosen_scenario_two_df)
+    co2e_per_single_car_usage_two = scenario_var[f"co2e_{chosen_lca}_per_car"].to_frame('co2e')
+    co2e_per_single_car_production_two = scenario_var['co2e_production_one_car'].to_frame('co2e')
+
+    fig_production_comparison = make_subplots(rows=2, cols=1)
+
+    fig_production_comparison.add_trace(go.Scatter(
+        x=['co2e'],
+        y=[co2e_per_single_car_production_one],
+    ), row=1, col=1)
+
+    fig_production_comparison.add_trace(go.Scatter(
+        x=['co2e'],
+        y=[co2e_per_single_car_production_two],
+    ), row=2, col=1)
+
+    fig_production_comparison.update_layout(height=600, width=600, title_text="Stacked Subplots")
+    return fig_production_comparison
 
 
 def get_fig_lca_waterfall(chosen_scenario_name, chosen_lca, chosen_vehicle_class, chosen_segment, is_recycling_displayed):
@@ -274,12 +393,27 @@ def get_fig_lca_waterfall(chosen_scenario_name, chosen_lca, chosen_vehicle_class
     return fig_lca_waterfall
 
 
-def get_yearly_co2_fig(regression_array, x_array):
-    yearly_co2e_fig = go.Figure(data=go.Bar(x=x_array, y=regression_array, marker_color=clr.green1_base))
+def get_yearly_co2_fig():
+    x_since_1990 = [1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+                    2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018]
+    y_since_1990 = [110000000000, 112200000000, 116280000000, 119000000000, 116280000000, 119000000000, 119000000000,
+                    119000000000, 121000000000, 125000000000, 123000000000, 120000000000, 119000000000, 114920000000,
+                    114240000000, 108000000000, 106000000000, 104000000000, 104000000000, 104000000000, 104000000000,
+                    104000000000, 104000000000, 107440000000, 108000000000, 109000000000, 111000000000, 113000000000,
+                    110000000000]
+    x = numpy.array([2019, 2030, 2045])
+    y = numpy.array([111520000000, selected_scenario['co2e_2030'].iloc[0], selected_scenario['co2e_2045'].iloc[0]])
+    x_new = numpy.arange(2019, 2050, 1)
+    x_array_combined = numpy.concatenate((x_since_1990, x_new))
+    # print (f"x array {x_array_combined}")
+    yearly_co2e_regression = calc.calc_quadratic_regression(x=x, y=y, x_new=x_new)
+    y_array_combined = numpy.concatenate((y_since_1990, yearly_co2e_regression))
+
+    yearly_co2e_fig = go.Figure(data=go.Bar(x=x_array_combined, y=y_array_combined, marker_color=clr.green1_base))
     yearly_co2e_fig.add_trace(
         go.Scatter(
-            x=x_array[-30:],
-            y=numpy.cumsum(regression_array[-30:]),
+            x=x_array_combined[-30:],
+            y=numpy.cumsum(y_array_combined[-30:]),
             yaxis='y2',
         )
     )
@@ -310,4 +444,5 @@ def get_yearly_co2_fig(regression_array, x_array):
         ),
         showlegend=False,
     )
-    return yearly_co2e_fig'''
+    return yearly_co2e_fig
+

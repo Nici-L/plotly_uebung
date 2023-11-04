@@ -4,12 +4,48 @@ from matplotlib import pyplot as plt
 
 
 def calculate_yearly_consumption_liter(df_data: pd.DataFrame):
+    """
+        Calculate yearly fuel consumption in liters based on manufacturer's data.
+
+        :param df_data: (pd.DataFrame) A DataFrame containing vehicle data, including manufacturer's consumption and mileage.
+
+        :return: (pandas Series) A Series containing the calculated yearly fuel consumption in liters for each vehicle.
+
+        Example:
+            df = pd.DataFrame({'Vehicle': ['Car1', 'Car2', 'Car3'],
+                               'consumption_manufacturer_l': [6.5, 8.0, 7.2],
+                               'mileage': [15000, 20000, 18000]})
+            yearly_consumption = calculate_yearly_consumption_liter(df)
+            # Output:
+            # 0     975.0
+            # 1    1600.0
+            # 2    1296.0
+        """
     consumption_manufacturer_liter_per_km = df_data['consumption_manufacturer_l']/100
     consumption_manufacturer_liter_per_year = consumption_manufacturer_liter_per_km * df_data['mileage']
     return consumption_manufacturer_liter_per_year
 
 
 def calculate_yearly_consumption_kwh(df_data: pd.DataFrame):
+    """
+        Calculate yearly energy consumption in kilowatt-hours (kWh) based on manufacturer's data.
+
+        :param df_data: (pd.DataFrame) A DataFrame containing vehicle data, including manufacturer's energy consumption
+                        in kilowatt-hours (kWh) and mileage.
+
+        :return: (pandas Series) A Series containing the calculated yearly energy consumption in kilowatt-hours (kWh)
+                 for each vehicle.
+
+        Example:
+            df = pd.DataFrame({'Vehicle': ['Car1', 'Car2', 'Car3'],
+                               'consumption_manufacturer_kWh': [15, 20, 18],
+                               'mileage': [15000, 20000, 18000]})
+            yearly_consumption = calculate_yearly_consumption_kwh(df)
+            # Output:
+            # 0    2250
+            # 1    4000
+            # 2    3240
+        """
     consumption_manufacturer_kwh_per_km = df_data['consumption_manufacturer_kWh']/100
     consumption_manufacturer_kwh_per_year = consumption_manufacturer_kwh_per_km * df_data['mileage']
     return consumption_manufacturer_kwh_per_year
@@ -17,20 +53,54 @@ def calculate_yearly_consumption_kwh(df_data: pd.DataFrame):
 
 def get_vehicle_class(df_data: pd.DataFrame):
     vehicle_class_list = df_data.index.get_level_values(0).unique()
-    print(f"vehicle_class_list: {vehicle_class_list}")
+    # print(f"vehicle_class_list: {vehicle_class_list}")
     return vehicle_class_list
 
 
 def get_segments_per_vehicle_class(df_data: pd.DataFrame):
+    """
+     Calculate segments per vehicle class.
+
+     :param df_data: (pd.DataFrame) A DataFrame containing vehicle class data.
+
+     :return: (pd.DataFrame or None) A DataFrame with segments for each vehicle class if data is found,
+              otherwise None.
+
+     Example:
+         # Output:
+         #   VehicleClass  Segment
+         # 0
+         # 1
+         # 3
+         # 4
+     """
     segments_per_vehicle_class = None
     for vehicle_class in get_vehicle_class(df_data):
         segments_per_vehicle_class = df_data.loc[vehicle_class]
-        print(f"all vehicle classes and their segments: {segments_per_vehicle_class}")
+        # print(f"all vehicle classes and their segments: {segments_per_vehicle_class}")
     return segments_per_vehicle_class
     # only last for loop is being saved and will remain the index for following calculations
 
 
 def get_consumption_per_year(consumption_per_100km, df_data):
+    """
+      Calculate annual fuel consumption for a given DataFrame of vehicles.
+
+      :param consumption_per_100km: (float) Fuel consumption in liters per 100 kilometers.
+      :param df_data: (pandas DataFrame) DataFrame containing vehicle mileage data.
+
+      :return: (pandas Series) Series containing the calculated annual fuel consumption for each vehicle in df_data.
+
+      Example:
+          consumption_100km = 7.5  # liters per 100 kilometers
+          mileage_data = pd.DataFrame({'Vehicle': ['Car1', 'Car2', 'Car3'],
+                                       'mileage': [15000, 20000, 18000]})
+          annual_consumption = get_consumption_per_year(consumption_100km, mileage_data)
+          # Output:
+          # 0    1125.0
+          # 1    1500.0
+          # 2    1350.0
+      """
     consumption_per_km = consumption_per_100km/100
     consumption_per_year = consumption_per_km*df_data['mileage']
     return consumption_per_year
@@ -228,7 +298,7 @@ def calculate_co2e_savings(dataframe):
         row = dataframe.loc[ind]
         calculated_co2e_savings = row['glider_weight'] * row['co2e_savings_glider'] + row['battery_weight']*row['co2e_savings_battery']
         calculated_co2e_savings_series[ind] = calculated_co2e_savings
-        print(f"recycling aus calculations:{calculated_co2e_savings_series}")
+        # print(f"recycling aus calculations:{calculated_co2e_savings_series}")
     return calculated_co2e_savings_series
 
 
@@ -260,10 +330,10 @@ def calc_quadratic_regression(x, y, x_new):
     # polynom approximation
     [a, b, c] = numpy.polyfit(x=x, y=y, deg=2)
 
-    print(f"a: {a}, b: {b}, c: {c}")
-    print(f"x : {x}")
-    print(f"y : {y}")
-    print(f"x_new : {x_new}")
+    # print(f"a: {a}, b: {b}, c: {c}")
+    # print(f"x : {x}")
+    # print(f"y : {y}")
+    # print(f"x_new : {x_new}")
     y_new = a * x_new[:] ** 2 + b * x_new[:] + c
     plt.plot(x_new, y_new)
     plt.show()

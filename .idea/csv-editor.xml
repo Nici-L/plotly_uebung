@@ -24,14 +24,14 @@
             </Attribute>
           </value>
         </entry>
-        <entry key="\source\assets\data\Scenario_2022.CSV">
+        <entry key="\source\assets\data\Förderung_E_Autos_Szenario_Agora_2030.CSV">
           <value>
             <Attribute>
               <option name="separator" value=";" />
             </Attribute>
           </value>
         </entry>
-        <entry key="\source\assets\data\Scenario_2022_co2werte.CSV">
+        <entry key="\source\assets\data\Förderung_E_Autos_Szenario_Agora_2040.CSV">
           <value>
             <Attribute>
               <option name="separator" value=";" />
@@ -45,13 +45,6 @@
             </Attribute>
           </value>
         </entry>
-        <entry key="\source\assets\data\Scenario_bestCase.CSV">
-          <value>
-            <Attribute>
-              <option name="separator" value=";" />
-            </Attribute>
-          </value>
-        </entry>
         <entry key="\source\assets\data\Scenario_bestCase_update.CSV">
           <value>
             <Attribute>
@@ -59,35 +52,35 @@
             </Attribute>
           </value>
         </entry>
-        <entry key="\source\assets\data\Scenario_worstCase.CSV">
-          <value>
-            <Attribute>
-              <option name="separator" value=";" />
-            </Attribute>
-          </value>
-        </entry>
-        <entry key="\source\assets\data\parameter_scenario_2022.CSV">
-          <value>
-            <Attribute>
-              <option name="separator" value=";" />
-            </Attribute>
-          </value>
-        </entry>
-        <entry key="\source\assets\data\parameter_scenario_2022_ausgedachte_höhere_Werte.CSV">
-          <value>
-            <Attribute>
-              <option name="separator" value=";" />
-            </Attribute>
-          </value>
-        </entry>
-        <entry key="\source\assets\data\parameter_scenario_2022_ausgedachte_niedrigere_Werte.CSV">
-          <value>
-            <Attribute>
-              <option name="separator" value=";" />
-            </Attribute>
-          </value>
-        </entry>
         <entry key="\source\assets\data\scenario_WorstCase_update.CSV">
+          <value>
+            <Attribute>
+              <option name="separator" value=";" />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\source\assets\data\scenario_baseline_2022.CSV">
+          <value>
+            <Attribute>
+              <option name="separator" value=";" />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\source\assets\data\scenario_reference_path_2022.CSV">
+          <value>
+            <Attribute>
+              <option name="separator" value=";" />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\source\assets\data\scenario_reference_path_future_2030.CSV">
+          <value>
+            <Attribute>
+              <option name="separator" value=";" />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\source\assets\data\scenario_reference_path_future_2045.CSV">
           <value>
             <Attribute>
               <option name="separator" value=";" />
