@@ -150,8 +150,8 @@ def get_co2e_usage_ttw_per_segment(series_with_calculated_co2e, dataframe_with_v
         Calculate the CO2 equivalent (CO2e) usage per segment based on a series of calculated CO2e values
         and a DataFrame containing vehicle stock information.
 
-        :param series_with_calculated_co2e: A pandas Series with calculated CO2e values, where the index
-                                             corresponds to segments.
+        :param series_with_calculated_co2e: A pandas Series with calculated CO2e values, where the index corresponds to segments.
+
         :type series_with_calculated_co2e: pd.Series
 
         :param dataframe_with_vehicle_stock: A pandas DataFrame containing information about vehicle stock,
@@ -173,6 +173,8 @@ def get_co2e_usage_ttw_per_segment(series_with_calculated_co2e, dataframe_with_v
         row = dataframe_with_vehicle_stock.loc[ind]
         calculated_co2e_per_segment = series_with_calculated_co2e[ind] * row['vehicle_stock']
         calculated_co2e_per_segment_series[ind] = calculated_co2e_per_segment
+       # print(f"calculated_co2e_per_segment:{calculated_co2e_per_segment}")
+       # print(f" calculated_co2e_per_segment_series { calculated_co2e_per_segment_series}")
     return calculated_co2e_per_segment_series
 
 
@@ -272,7 +274,30 @@ def calculate_production_co2e_per_car(dataframe):
         row = dataframe.loc[ind]
         calculated_co2e_production = row['glider_weight'] * row['co2e_production'] + (row['power_electric_engine'] + row['power_electric_engine_2'])*row['co2e_electric_engine'] + row['battery_capacity_brutto']*row['co2e_battery_production'] + row['weight_electric_drivechain']*row['co2e_drivechain']
         calculated_co2e_production_series[ind] = calculated_co2e_production
+    print(f"calculated_co2e_production_series{calculated_co2e_production_series}")
     return calculated_co2e_production_series
+
+
+def calculate_production_co2e_per_vehicle_class(series_production_co2e_per_car, dataframe):
+    production_co2e_per_segment_series = pd.Series(index=dataframe.index)
+    for ind in dataframe.index:
+        row = dataframe.loc[ind]
+        production_co2e_per_segment = series_production_co2e_per_car[ind] * row['vehicle_stock']
+        production_co2e_per_segment_series[ind] = production_co2e_per_segment
+    calculated_co2e_production_per_vehicle_class_icev = production_co2e_per_segment_series.loc['icev'].sum()
+    calculated_co2e_production_per_vehicle_class_hev = production_co2e_per_segment_series.loc['hev'].sum()
+    calculated_co2e_production_per_vehicle_class_phev = production_co2e_per_segment_series.loc['phev'].sum()
+    calculated_co2e_production_per_vehicle_class_bev = production_co2e_per_segment_series.loc['bev'].sum()
+    data = {'icev': calculated_co2e_production_per_vehicle_class_icev,
+            'hev': calculated_co2e_production_per_vehicle_class_hev,
+            'phev': calculated_co2e_production_per_vehicle_class_phev,
+            'bev': calculated_co2e_production_per_vehicle_class_bev}
+    calculated_co2e_production_per_vehicle_class_all_series = pd.Series(data=data, index=['icev', 'hev', 'phev', 'bev'])
+    print(f"calculated_co2e_production_per_vehicle_class_all_series:{calculated_co2e_production_per_vehicle_class_all_series}")
+    return calculated_co2e_production_per_vehicle_class_all_series
+
+
+
 
 
 def calculate_co2e_savings(dataframe):

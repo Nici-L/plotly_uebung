@@ -19,27 +19,28 @@ def register_callbacks(app_instance):
         fig.init_global_variables(selected_scenario_name=scenario_chosen)
         return f'You have selected: {scenario_chosen} at {datetime.now().strftime("%d.%m.%y %H:%M:%S")}'
 
-
     # callback for parameter menu when calculate button is pressed
     @app_instance.callback(
         Output(component_id='output_input_div', component_property='children', allow_duplicate=True),
         Input(component_id='calculate-button', component_property='n_clicks'),
-        [# State(component_id='input_consumption', component_property='value'),
+        [
          State(component_id='share_E5', component_property='value'),
          State(component_id='share_E10', component_property='value'),
          State(component_id='share_diesel', component_property='value'),
          State(component_id='co2e_electricity', component_property='value'),
          State(component_id='vehicle_stock', component_property='value'),
-         State(component_id='share_icev', component_property='value'),
+         State(component_id='share_icev_g', component_property='value'),
+         State(component_id='share_icev_d', component_property='value'),
          State(component_id='share_hev', component_property='value'),
          State(component_id='share_phev', component_property='value'),
          State(component_id='share_bev', component_property='value'),
         ],
         prevent_initial_call=True
     )
-    def update_parameter_menu_calculate_button(n, share_E5, share_E10, share_diesel, co2e_electricity, vehicle_stock, share_icev_g, share_hev, share_phev, share_bev):
+    def update_parameter_menu_calculate_button(n, share_E5, share_E10, share_diesel, co2e_electricity, vehicle_stock, share_icev_g, share_hev, share_phev, share_bev, share_icev_d):
         share_hev = share_hev/100
         share_icev_g = share_icev_g/100
+        share_icev_d = share_icev_d/100
         share_phev = share_phev/100
         share_bev = share_bev/100
         share_diesel = share_diesel/100
@@ -49,21 +50,32 @@ def register_callbacks(app_instance):
         co2e_electricity = co2e_electricity/1000
         vehicle_classes_list_without_lkw = list(dict.fromkeys(fig.selected_scenario.index.get_level_values(0).to_list()))
         vehicle_classes_list_without_lkw.remove('lkw')
-        # selected_scenario.loc[(vehicle_classes_list_without_lkw, slice(None)), 'consumption_manufacturer_l'] = consumption
+
         fig.selected_scenario.loc[(vehicle_classes_list_without_lkw, slice(None)), 'share_E5_totalgasoline'] = share_E5
         fig.selected_scenario.loc[(vehicle_classes_list_without_lkw, slice(None)), 'share_E10_totalgasoline'] = share_E10
         fig.selected_scenario.loc[(vehicle_classes_list_without_lkw, slice(None)), 'share_D7_totaldiesel'] = share_diesel
         fig.selected_scenario.loc[(vehicle_classes_list_without_lkw, slice(None)), 'co2e_electricity_WtW'] = co2e_electricity
         fig.selected_scenario['vehicle_stock'] = fig.selected_scenario['shareontotalvehicles'] * vehicle_stock
+
         vehicle_stock_icev_g = vehicle_stock * share_icev_g
-        # print(f"icev_g share:{share_icev_g}")
-        # print(f"vehicle stock icev_g:{vehicle_stock_icev_g}")
         fig.selected_scenario.loc[('icev', slice(None)), 'vehicle_stock'] = vehicle_stock_icev_g * fig.selected_scenario.loc[('icev', slice(None)), 'share_on_total_vehicles_of_class']
+        print(vehicle_stock_icev_g * fig.selected_scenario.loc[('icev', slice(None)), 'share_on_total_vehicles_of_class'])
+        # vehicle_stock_icev_d = vehicle_stock * share_icev_d
+        # fig.selected_scenario.loc[('icev', slice(None)), 'vehicle_stock'] = vehicle_stock_icev_d * fig.selected_scenario.loc[('icev', slice(None)), 'share_on_total_vehicles_of_class']
+
+        vehicle_stock_hev = vehicle_stock * share_hev
+        fig.selected_scenario.loc[('hev', slice(None)), 'vehicle_stock'] = vehicle_stock_hev * fig.selected_scenario.loc[('hev', slice(None)), 'share_on_total_vehicles_of_class']
+
+        vehicle_stock_phev = vehicle_stock * share_phev
+        fig.selected_scenario.loc[('phev', slice(None)), 'vehicle_stock'] = vehicle_stock_phev * fig.selected_scenario.loc[('phev', slice(None)), 'share_on_total_vehicles_of_class']
+
+        vehicle_stock_bev = vehicle_stock * share_bev
+        fig.selected_scenario.loc[('bev', slice(None)), 'vehicle_stock'] = vehicle_stock_bev * fig.selected_scenario.loc[('bev', slice(None)), 'share_on_total_vehicles_of_class']
 
         # fig.selected_scenario.loc[('icev', slice(None)), 'vehicle_stock'] = (vehicle_stock * share_icev) * fig.selected_scenario.loc[('icev', slice(None)), 'shareontotalvehicles']
-        fig.selected_scenario.loc[('hev', slice(None)), 'vehicle_stock'] = (vehicle_stock * share_hev) * fig.selected_scenario.loc[('hev', slice(None)), 'shareontotalvehicles']
-        fig.selected_scenario.loc[('phev', slice(None)), 'vehicle_stock'] = (vehicle_stock * share_phev) * fig.selected_scenario.loc[('phev', slice(None)), 'shareontotalvehicles']
-        fig.selected_scenario.loc[('bev', slice(None)), 'vehicle_stock'] = (vehicle_stock * share_bev) * fig.selected_scenario.loc[('bev', slice(None)), 'shareontotalvehicles']
+        # fig.selected_scenario.loc[('hev', slice(None)), 'vehicle_stock'] = (vehicle_stock * share_hev) * fig.selected_scenario.loc[('hev', slice(None)), 'shareontotalvehicles']
+        # fig.selected_scenario.loc[('phev', slice(None)), 'vehicle_stock'] = (vehicle_stock * share_phev) * fig.selected_scenario.loc[('phev', slice(None)), 'shareontotalvehicles']
+        # fig.selected_scenario.loc[('bev', slice(None)), 'vehicle_stock'] = (vehicle_stock * share_bev) * fig.selected_scenario.loc[('bev', slice(None)), 'shareontotalvehicles']
 
         fig.init_global_variables(selected_scenario_name=None, scenario_df=fig.selected_scenario)
 
@@ -78,18 +90,17 @@ def register_callbacks(app_instance):
         Output(component_id='share_diesel', component_property='value', allow_duplicate=True),
         Output(component_id='co2e_electricity', component_property='value', allow_duplicate=True),
         Output(component_id='vehicle_stock', component_property='value', allow_duplicate=True),
-        Output(component_id='share_icev', component_property='value', allow_duplicate=True),
+        Output(component_id='share_icev_g', component_property='value', allow_duplicate=True),
+        Output(component_id='share_icev_d', component_property='value', allow_duplicate=True),
         Output(component_id='share_hev', component_property='value', allow_duplicate=True),
         Output(component_id='share_phev', component_property='value', allow_duplicate=True),
         Output(component_id='share_bev', component_property='value', allow_duplicate=True), ],
         Input(component_id='output_input_div', component_property='children'),
-
         prevent_initial_call=True
     )
     def update_parameter_menu(scenario_selection_string):
 
         fig.init_global_variables(selected_scenario_name=None, scenario_df=fig.selected_scenario)
-
         vehicle_classes_list_without_lkw = list(dict.fromkeys(fig.selected_scenario.index.get_level_values(0).to_list()))
         vehicle_classes_list_without_lkw.remove('lkw')
 
@@ -98,40 +109,40 @@ def register_callbacks(app_instance):
         share_diesel = fig.selected_scenario.loc[(vehicle_classes_list_without_lkw, slice(None)), 'share_D7_totaldiesel'].unique()
         co2e_electricity = fig.selected_scenario.loc[(vehicle_classes_list_without_lkw, slice(None)), 'co2e_electricity_WtW'].unique()
 
-        # share_icev = (fig.selected_scenario.loc[('icev', slice(None)), 'total_number_of_cars_in_class'] & fig.selected_scenario.loc['energysupply'] == 'gasoline')/fig.selected_scenario['vehicle_stock'].sum()
-        # print(f"number of icev_g{fig.selected_scenario.loc[('icev', slice(None)), 'total_number_of_cars_in_class'] & fig.selected_scenario.loc['energysupply'] == 'gasoline'}")
+        df_icev = fig.selected_scenario.loc[('icev', slice(None))]
+        icev_g_vehicle_stock = df_icev.loc[df_icev['energysupply'] == 'gasoline', 'total_number_of_cars_in_class'][0]
+        icev_g_share = icev_g_vehicle_stock/fig.selected_scenario['vehicle_stock'].sum()
 
-        # icev_vehicle_stock = fig.selected_scenario.loc[('icev', slice(None))].loc[(fig.selected_scenario['energysupply'] == 'gasoline'), 'total_number_of_cars_in_class']
-        icev_vehicle_stock = fig.selected_scenario.loc[('icev', slice(None)) & ('energysupply' == 'gasoline')][ 'total_number_of_cars_in_class']
-        # (fig.selected_scenario['energysupply'] == 'gasoline'), 'total_number_of_cars_in_class'
-        #icev_g = fig.selected_scenario['energysupply'] == 'gasoline'
-        print(f"icev_g vehicle stock {icev_vehicle_stock}")
-        # df.loc[(df['Salary_in_1000'] >= 100) & (df['Age'] < 60) & (df['FT_Team'].str.startswith('S')), ['Name', 'FT_Team']]
+        icev_d_vehicle_stock = df_icev.loc[df_icev['energysupply'] == 'diesel', 'total_number_of_cars_in_class'][0]
+        icev_d_share = icev_d_vehicle_stock / fig.selected_scenario['vehicle_stock'].sum()
 
-        share_hev = ((1 / fig.selected_scenario['vehicle_stock'].sum()) * fig.selected_scenario.loc[('hev', slice(None)), 'vehicle_stock']).sum()
-        share_bev = ((1 / fig.selected_scenario['vehicle_stock'].sum()) * fig.selected_scenario.loc[('bev', slice(None)), 'vehicle_stock']).sum()
-        share_phev = ((1 / fig.selected_scenario['vehicle_stock'].sum()) * fig.selected_scenario.loc[('phev', slice(None)), 'vehicle_stock']).sum()
+        df_hev = fig.selected_scenario.loc[('hev', slice(None))]
+        hev_g_vehicle_stock = df_hev.loc[df_icev['energysupply'] == 'gasoline', 'total_number_of_cars_in_class'][0]
+        hev_g_share = hev_g_vehicle_stock / fig.selected_scenario['vehicle_stock'].sum()
+
+        phev_vehicle_stock = fig.selected_scenario.loc[('phev', slice(None)), 'total_number_of_cars_in_class'][0]
+        # phev_g_vehicle_stock = df_phev.loc[df_icev['energysupply'] == 'gasoline'
+        phev_share = phev_vehicle_stock / fig.selected_scenario['vehicle_stock'].sum()
+
+        bev_vehicle_stock = fig.selected_scenario.loc[('bev', slice(None)), 'total_number_of_cars_in_class'][0]
+        bev_share = bev_vehicle_stock / fig.selected_scenario['vehicle_stock'].sum()
+
         vehicle_stock = int(fig.selected_scenario['vehicle_stock'].sum())
-        share_hev = int(share_hev * 100)
-        share_icev = 100
-        share_phev = int(share_phev * 100)
-        share_bev = int(share_bev * 100)
+        share_hev = int(hev_g_share * 100)
+        share_icev_g = int(icev_g_share * 100)
+        share_icev_d = int(icev_d_share * 100)
+        share_phev = int(phev_share * 100)
+        share_bev = int(bev_share * 100)
         share_diesel = int(share_diesel * 100)
         share_E5 = int(share_E5 * 100)
         share_E10 = int(share_E10 * 100)
         co2e_electricity = int(co2e_electricity * 1000)
 
-        fig.selected_scenario['vehicle_stock'] = fig.selected_scenario['shareontotalvehicles'] * vehicle_stock
-        print(f"vehicle stock per segment: {fig.selected_scenario['vehicle_stock']}")
-        # vehicle_stock_icev_g = vehicle_stock * share_icev_g
-        # print(f"icev_g share:{share_icev_g}")
-        # print(f"vehicle stock icev_g:{vehicle_stock_icev_g}")
+        # share_hev = ((1 / fig.selected_scenario['vehicle_stock'].sum()) * fig.selected_scenario.loc[('hev', slice(None)), 'vehicle_stock']).sum()
         # fig.selected_scenario.loc[('icev', slice(None)), 'vehicle_stock'] = vehicle_stock_icev_g * fig.selected_scenario.loc[('icev', slice(None)), 'share_on_total_vehicles_of_class']
         # selected_scenario.loc[('hev', slice(None)), 'vehicle_stock'] = (vehicle_stock * share_hev) * selected_scenario.loc[('hev', slice(None)), 'shareontotalvehicles']
-        # selected_scenario.loc[('phev', slice(None)), 'vehicle_stock'] = (vehicle_stock * share_phev) * selected_scenario.loc[('phev', slice(None)), 'shareontotalvehicles']
-        # selected_scenario.loc[('bev', slice(None)), 'vehicle_stock'] = (vehicle_stock * share_bev) * selected_scenario.loc[('bev', slice(None)), 'shareontotalvehicles']
 
-        return share_E5, share_E10, share_diesel, co2e_electricity, vehicle_stock, share_icev, share_hev, share_phev, share_bev
+        return share_E5, share_E10, share_diesel, co2e_electricity, vehicle_stock, share_icev_g, share_hev, share_phev, share_bev, share_icev_d
 
 
 # callback for reset button
@@ -142,7 +153,7 @@ def register_callbacks(app_instance):
         Output(component_id='share_diesel', component_property='value'),
         Output(component_id='co2e_electricity', component_property='value'),
         Output(component_id='vehicle_stock', component_property='value'),
-        Output(component_id='share_icev', component_property='value'),
+        Output(component_id='share_icev_g', component_property='value'),
         Output(component_id='share_hev', component_property='value'),
         Output(component_id='share_phev', component_property='value'),
         Output(component_id='share_bev', component_property='value'),],
@@ -318,6 +329,15 @@ def register_callbacks(app_instance):
         return fig_lca_waterfall
 
     @app_instance.callback(
+        Output(component_id='fig_production_comparison', component_property='figure'),
+        Input(component_id='output_input_div', component_property='children'),
+        prevent_initital_call=True
+    )
+    def update_production_comparison_graph(input):
+        fig_production_comparison = fig.get_fig_production_comparison()
+        return fig_production_comparison
+
+    @app_instance.callback(
         Output("co2e_over_the_years_fig", "figure"),
         Input(component_id='output_input_div', component_property='children'),
         prevent_initital_call=True
@@ -346,7 +366,6 @@ def register_callbacks(app_instance):
             return not is_open
         return is_open
 
-
     @app_instance.callback(
         Output("collapse 3", "is_open"),
         [Input("collapse-button-3", "n_clicks")],
@@ -357,7 +376,6 @@ def register_callbacks(app_instance):
             return not is_open
         return is_open
 
-
     @app_instance.callback(
         Output("collapse 4", "is_open"),
         [Input("collapse-button-4", "n_clicks")],
@@ -367,7 +385,6 @@ def register_callbacks(app_instance):
         if n:
             return not is_open
         return is_open
-
 
     @app_instance.callback(
         Output("collapse 5", "is_open"),

@@ -7,6 +7,7 @@ import source.config as config
 import numpy
 import os
 from plotly.subplots import make_subplots
+import numpy as np
 
 
 scenario_filenames = []
@@ -35,8 +36,9 @@ co2e_wtw_per_car_df: pd.DataFrame
 co2e_wtw_per_segment: pd.Series
 co2e_wtw_per_segment_df: pd.DataFrame
 co2e_production_one_car: pd.Series
+co2e_production_per_vehicle_class_all: pd.Series
 co2e_savings_one_car: pd.Series
-
+# todo: add co2e_production_vehicle_class --> (production per car * vehicle stock).sum()
 
 map_colors = {
     ## Vehicles
@@ -117,6 +119,8 @@ def calculate_variables_based_on_scenario(scenario_df: pd.DataFrame):    # (scen
     co2e_wtw_per_segment_df = co2e_wtw_per_segment.to_frame('co2e')
     # calculating co2e of production for one car
     co2e_production_one_car = calc.calculate_production_co2e_per_car(scenario_df)
+    # calculating co2e of production for whole vehicle class
+    co2e_production_per_vehicle_class_all = calc.calculate_production_co2e_per_vehicle_class(co2e_production_one_car, scenario_df)
     # calculate co2e savings (recycling)
     co2e_savings_one_car = calc.calculate_co2e_savings(scenario_df)
     # dictionary for return variables to save variables but not write them into global variables
@@ -136,6 +140,7 @@ def calculate_variables_based_on_scenario(scenario_df: pd.DataFrame):    # (scen
         "co2e_wtw_per_segment_df": co2e_wtw_per_segment_df,
         "co2e_production_one_car": co2e_production_one_car,
         "co2e_savings_one_car": co2e_savings_one_car,
+        "co2e_production_per_vehicle_class_all": co2e_production_per_vehicle_class_all,
     }
     return results
 
@@ -211,12 +216,16 @@ def init_global_variables(selected_scenario_name: str = None, scenario_df: pd.Da
     # calculating co2e of production for one car
     global co2e_production_one_car
     co2e_production_one_car = calculation_results.get("co2e_production_one_car")
+    # calculate co2e of production for all vehicle classes
+    global co2e_production_per_vehicle_class_all
+    co2e_production_per_vehicle_class_all = calculation_results.get("co2e_production_per_vehicle_class_all")
     # calculate co2e savings (recycling)
     global co2e_savings_one_car
     co2e_savings_one_car = calculation_results.get("co2e_savings_one_car")
 
 
 init_global_variables(scenario_filenames[0].get('value'))
+calc.calculate_production_co2e_per_vehicle_class(series_production_co2e_per_car=co2e_production_one_car, dataframe=selected_scenario)
 
 
 def get_fig_sum_total_co2e(co2e_series, dataframe):
@@ -309,34 +318,31 @@ def get_fig_consumption_kwh(co2e_dataframe, chosen_segments, chosen_vehicle_clas
     return fig_consumption_kwh
 
 
-def get_fig_production_comparison(chosen_lca, chosen_scenario_name_one, chosen_scenario_name_two):
+def get_fig_production_comparison():
+    x = np.arange(20)
 
-    chosen_scenario_one_df = pd.read_csv (f'{config.SCENARIO_FOLDER_PATH}/{chosen_scenario_name_one}', sep=';', decimal=",",
-                                      thousands='.', encoding="ISO-8859-1", index_col=[0, 1], skipinitialspace=True, header=[3])
-    scenario_var = calculate_variables_based_on_scenario(chosen_scenario_one_df)
-    co2e_per_single_car_usage_one = scenario_var[f"co2e_{chosen_lca}_per_car"].to_frame('co2e')
-    co2e_per_single_car_production_one = scenario_var['co2e_production_one_car'].to_frame('co2e')
-
-
-    chosen_scenario_two_df = pd.read_csv (f'{config.SCENARIO_FOLDER_PATH}/{chosen_scenario_name_two}', sep=';', decimal=",",
-                                      thousands='.', encoding="ISO-8859-1", index_col=[0, 1], skipinitialspace=True, header=[3])
-    scenario_var = calculate_variables_based_on_scenario(chosen_scenario_two_df)
-    co2e_per_single_car_usage_two = scenario_var[f"co2e_{chosen_lca}_per_car"].to_frame('co2e')
-    co2e_per_single_car_production_two = scenario_var['co2e_production_one_car'].to_frame('co2e')
-
-    fig_production_comparison = make_subplots(rows=2, cols=1)
-
+    fig_production_comparison = go.Figure(data=go.Scatter(
+        x=x,
+        y=co2e_ttw_per_car.loc['icev', 'Mittelklasse']*x + co2e_production_one_car.loc['icev', 'Mittelklasse']))
+    print(f"co2e_ttw_per_car:{co2e_ttw_per_car.loc['icev', 'Mittelklasse']}")
+    print(f"co2e_production_one_car{co2e_production_one_car.loc['bev', 'Mittelklasse']}")
     fig_production_comparison.add_trace(go.Scatter(
-        x=['co2e'],
-        y=[co2e_per_single_car_production_one],
-    ), row=1, col=1)
-
+        x=x,
+        y=co2e_ttw_per_car.loc['hev', 'Mittelklasse'] * x + co2e_production_one_car.loc['hev', 'Mittelklasse']
+    ))
     fig_production_comparison.add_trace(go.Scatter(
-        x=['co2e'],
-        y=[co2e_per_single_car_production_two],
-    ), row=2, col=1)
-
-    fig_production_comparison.update_layout(height=600, width=600, title_text="Stacked Subplots")
+        x=x,
+        y=co2e_ttw_per_car.loc['bev', 'Mittelklasse'] * x + co2e_production_one_car.loc['bev', 'Mittelklasse']
+    ))
+    fig_production_comparison.add_trace(go.Scatter(
+        x=x,
+        y=co2e_ttw_per_car.loc['phev', 'Mittelklasse'] * x + co2e_production_one_car.loc['phev', 'Mittelklasse']
+    ))
+    fig_production_comparison.update_layout(
+        plot_bgcolor='#002b36',  # color Solar stylesheet
+        paper_bgcolor='#002b36',
+        font_color='white',
+    )
     return fig_production_comparison
 
 
