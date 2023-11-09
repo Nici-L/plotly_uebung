@@ -59,7 +59,7 @@ def register_callbacks(app_instance):
 
         vehicle_stock_icev_g = vehicle_stock * share_icev_g
         fig.selected_scenario.loc[('icev', slice(None)), 'vehicle_stock'] = vehicle_stock_icev_g * fig.selected_scenario.loc[('icev', slice(None)), 'share_on_total_vehicles_of_class']
-        print(vehicle_stock_icev_g * fig.selected_scenario.loc[('icev', slice(None)), 'share_on_total_vehicles_of_class'])
+        # print(vehicle_stock_icev_g * fig.selected_scenario.loc[('icev', slice(None)), 'share_on_total_vehicles_of_class'])
         # vehicle_stock_icev_d = vehicle_stock * share_icev_d
         # fig.selected_scenario.loc[('icev', slice(None)), 'vehicle_stock'] = vehicle_stock_icev_d * fig.selected_scenario.loc[('icev', slice(None)), 'share_on_total_vehicles_of_class']
 
@@ -331,10 +331,26 @@ def register_callbacks(app_instance):
     @app_instance.callback(
         Output(component_id='fig_production_comparison', component_property='figure'),
         Input(component_id='output_input_div', component_property='children'),
+        Input(component_id='chose_lca_scatter_plot', component_property='value'),
+        Input(component_id='lca-segment-production-comparison', component_property='value'),
+        Input(component_id='chose_km_or_year', component_property='value'),
         prevent_initital_call=True
     )
-    def update_production_comparison_graph(input):
-        fig_production_comparison = fig.get_fig_production_comparison()
+    def update_production_comparison_graph(input_div, chosen_lca, chosen_segment, km_or_year_value):
+        if chosen_lca == 'TtW' and km_or_year_value == 'per year':
+            fig_production_comparison = fig.get_fig_production_comparison_per_year(co2_per_car=fig.co2e_ttw_per_car, segment=chosen_segment)
+            return fig_production_comparison
+        elif chosen_lca == 'WtW' and km_or_year_value == 'per year':
+            fig_production_comparison = fig.get_fig_production_comparison_per_year(co2_per_car=fig.co2e_wtw_per_car, segment=chosen_segment)
+            return fig_production_comparison
+        elif chosen_lca == 'TtW' and km_or_year_value == 'per km':
+            fig_production_comparison = fig.get_fig_production_comparison_per_km(co2_per_car_per_km=fig.co2e_ttw_per_car_per_km, segment=chosen_segment)
+            return fig_production_comparison
+        elif chosen_lca == 'WtW' and km_or_year_value == 'per km':
+            fig_production_comparison = fig.get_fig_production_comparison_per_km(co2_per_car_per_km=fig.co2e_wtw_per_car_per_km, segment=chosen_segment)
+            return fig_production_comparison
+        else:
+            fig_production_comparison = {}
         return fig_production_comparison
 
     @app_instance.callback(

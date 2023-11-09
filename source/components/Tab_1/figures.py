@@ -1,3 +1,5 @@
+import datetime
+
 import plotly.graph_objects as go
 import plotly.express as px
 import source.utils.colors_KIT_plotly as clr
@@ -25,12 +27,16 @@ print(f"scenario_filenames: {scenario_filenames}")
 selected_scenario: pd.DataFrame
 consumption_per_year_liter: pd.Series
 consumption_per_year_kwh: pd.Series
+consumption_per_km_liter: pd.Series
+consumption_per_km_kwh: pd.Series
 consumption_per_year_liter_with_energy_supply: pd.Series
 consumption_per_year_kWh_with_energy_supply: pd.Series
+co2e_ttw_per_car_per_km: pd.Series
 co2e_ttw_per_car: pd.Series
 co2e_ttw_per_car_df: pd.DataFrame
 co2e_ttw_per_segment: pd.Series
 co2e_ttw_per_segment_df: pd.DataFrame
+co2e_wtw_per_car_per_km: pd.Series
 co2e_wtw_per_car: pd.Series
 co2e_wtw_per_car_df: pd.DataFrame
 co2e_wtw_per_segment: pd.Series
@@ -38,7 +44,7 @@ co2e_wtw_per_segment_df: pd.DataFrame
 co2e_production_one_car: pd.Series
 co2e_production_per_vehicle_class_all: pd.Series
 co2e_savings_one_car: pd.Series
-# todo: add co2e_production_vehicle_class --> (production per car * vehicle stock).sum()
+
 
 map_colors = {
     ## Vehicles
@@ -102,15 +108,25 @@ def calculate_variables_based_on_scenario(scenario_df: pd.DataFrame):    # (scen
     # calculating consumption per year
     consumption_per_year_liter = calc.calculate_yearly_consumption_liter(scenario_df)
     consumption_per_year_kwh = calc.calculate_yearly_consumption_kwh(scenario_df)
+    # calculating consumption per km
+    consumption_per_km_liter = calc.calculate_consumption_liter_per_km(scenario_df)
+    consumption_per_km_kwh = calc.calculate_consumption_kwh_per_km(scenario_df)
+    # add energy supply column
+    consumption_per_km_liter_with_energy_supply = consumption_per_km_liter.to_frame('consumption_manufacturer_l').join(scenario_df['energysupply'])
+    consumption_per_km_kwh_with_energy_supply = consumption_per_km_kwh.to_frame('consumption_manufacturer_kWh').join(scenario_df['energysupply'])
     # add energy supply column
     consumption_per_year_liter_with_energy_supply = consumption_per_year_liter.to_frame('consumption_manufacturer_l').join(scenario_df['energysupply'])
     consumption_per_year_kWh_with_energy_supply = consumption_per_year_kwh.to_frame('consumption_manufacturer_kWh').join(scenario_df['energysupply'])
+    # calculating co2 ttw per km per car
+    co2e_ttw_per_car_per_km = calc.get_co2e_usage_ttw_per_car_per_km(consumption_per_km_liter_with_energy_supply, consumption_per_km_kwh_with_energy_supply, scenario_df)
     # calculating co2e ttw per year per car
     co2e_ttw_per_car = calc.get_co2e_usage_ttw_per_car(consumption_per_year_liter_with_energy_supply, consumption_per_year_kWh_with_energy_supply, scenario_df)
     co2e_ttw_per_car_df = co2e_ttw_per_car.to_frame('co2e')
     # calculating co2e ttw per year per segment
     co2e_ttw_per_segment = calc.get_co2e_usage_ttw_per_segment(co2e_ttw_per_car, scenario_df)
     co2e_ttw_per_segment_df = co2e_ttw_per_segment.to_frame('co2e')
+    # calculating co2e wtw per km per car
+    co2e_wtw_per_car_per_km = calc.get_co2e_usage_wtw_per_car_per_km(consumption_per_km_liter_with_energy_supply, consumption_per_km_kwh_with_energy_supply, scenario_df)
     # calculating co2e wtw per year per car
     co2e_wtw_per_car = calc.get_co2e_usage_wtw_per_car(consumption_per_year_liter_with_energy_supply, consumption_per_year_kWh_with_energy_supply, scenario_df)
     co2e_wtw_per_car_df = co2e_wtw_per_car.to_frame('co2e')
@@ -128,12 +144,18 @@ def calculate_variables_based_on_scenario(scenario_df: pd.DataFrame):    # (scen
         "selected_scenario": scenario_df,
         "consumption_per_year_liter": consumption_per_year_liter,
         "consumption_per_year_kwh": consumption_per_year_kwh,
+        "consumption_per_km_liter": consumption_per_km_liter,
+        "consumption_per_km_kwh": consumption_per_km_kwh,
+        "consumption_per_km_liter_with_energy_supply": consumption_per_km_liter_with_energy_supply,
+        "consumption_per_km_kwh_with_energy_supply": consumption_per_km_kwh_with_energy_supply,
         "consumption_per_year_liter_with_energy_supply": consumption_per_year_liter_with_energy_supply,
         "consumption_per_year_kWh_with_energy_supply": consumption_per_year_kWh_with_energy_supply,
+        "co2e_ttw_per_car_per_km": co2e_ttw_per_car_per_km,
         "co2e_ttw_per_car": co2e_ttw_per_car,
         "co2e_ttw_per_car_df": co2e_ttw_per_car_df,
         "co2e_ttw_per_segment": co2e_ttw_per_segment,
         "co2e_ttw_per_segment_df": co2e_ttw_per_segment_df,
+        "co2e_wtw_per_car_per_km": co2e_wtw_per_car_per_km,
         "co2e_wtw_per_car": co2e_wtw_per_car,
         "co2e_wtw_per_car_df": co2e_wtw_per_car_df,
         "co2e_wtw_per_segment": co2e_wtw_per_segment,
@@ -188,11 +210,24 @@ def init_global_variables(selected_scenario_name: str = None, scenario_df: pd.Da
     consumption_per_year_liter = calculation_results.get("consumption_per_year_liter")
     global consumption_per_year_kwh
     consumption_per_year_kwh = calculation_results.get("consumption_per_year_kwh")
+    # calculating consumption per km
+    global consumption_per_km_liter
+    consumption_per_km_liter = calculation_results.get("consumption_per_km_liter")
+    global consumption_per_km_kwh
+    consumption_per_km_kwh = calculation_results.get("consumption_per_km_kwh")
+    # add energy supply column
+    global consumption_per_km_liter_with_energy_supply
+    consumption_per_km_liter_with_energy_supply = calculation_results.get("consumption_per_km_liter_with_energy_supply")
+    global consumption_per_km_kwh_with_energy_supply
+    consumption_per_km_kwh_with_energy_supply = calculation_results.get("consumption_per_km_kwh_with_energy_supply")
     # add energy supply column
     global consumption_per_year_liter_with_energy_supply
     consumption_per_year_liter_with_energy_supply = calculation_results.get("consumption_per_year_liter_with_energy_supply")
     global consumption_per_year_kWh_with_energy_supply
     consumption_per_year_kWh_with_energy_supply = calculation_results.get("consumption_per_year_kWh_with_energy_supply")
+    # calculating co2e ttw per km per car
+    global co2e_ttw_per_car_per_km
+    co2e_ttw_per_car_per_km = calculation_results.get("co2e_ttw_per_car_per_km")
     # calculating co2e ttw per year per car
     global co2e_ttw_per_car
     co2e_ttw_per_car = calculation_results.get("co2e_ttw_per_car")
@@ -203,6 +238,9 @@ def init_global_variables(selected_scenario_name: str = None, scenario_df: pd.Da
     co2e_ttw_per_segment = calculation_results.get("co2e_ttw_per_segment")
     global co2e_ttw_per_segment_df
     co2e_ttw_per_segment_df = calculation_results.get("co2e_ttw_per_segment_df")
+    # calculating co2e wtw per km per car
+    global co2e_wtw_per_car_per_km
+    co2e_wtw_per_car_per_km = calculation_results.get("co2e_wtw_per_car_per_km")
     # calculating co2e wtw per year per car
     global co2e_wtw_per_car
     co2e_wtw_per_car = calculation_results.get("co2e_wtw_per_car")
@@ -225,7 +263,7 @@ def init_global_variables(selected_scenario_name: str = None, scenario_df: pd.Da
 
 
 init_global_variables(scenario_filenames[0].get('value'))
-calc.calculate_production_co2e_per_vehicle_class(series_production_co2e_per_car=co2e_production_one_car, dataframe=selected_scenario)
+# calc.calculate_production_co2e_per_vehicle_class(series_production_co2e_per_car=co2e_production_one_car, dataframe=selected_scenario)
 
 
 def get_fig_sum_total_co2e(co2e_series, dataframe):
@@ -272,7 +310,7 @@ def get_fig_co2e_segment_all_vehicle_classes(co2e_dataframe, chosen_segment):
     x_val = co2e_dataframe.loc[(slice(None), f"{chosen_segment}"), "co2e"]
     fig_co2e_segment_all_vehicle_classes = px.bar(x_val.to_frame('co2e'), x=x_val.to_frame('co2e').index.get_level_values(0), y='co2e', color_discrete_map=map_colors, text_auto='.2s', color=x_val.to_frame('co2e').index.get_level_values(0))
     fig_co2e_segment_all_vehicle_classes.update_layout(
-            title='CO<sub>2e</sub> per segment and drivechain per year in kg',
+            title='CO<sub>2e</sub> created by usage per year in kg',
             yaxis_title="Co<sub>2e</sub> in kg",
             xaxis_title="vehicle class",
             plot_bgcolor='#002b36',  # color Solar stylesheet
@@ -318,32 +356,65 @@ def get_fig_consumption_kwh(co2e_dataframe, chosen_segments, chosen_vehicle_clas
     return fig_consumption_kwh
 
 
-def get_fig_production_comparison():
+def get_fig_production_comparison_per_year(co2_per_car, segment):
     x = np.arange(20)
-
-    fig_production_comparison = go.Figure(data=go.Scatter(
+    fig_production_comparison_per_year = go.Figure(go.Scatter(
         x=x,
-        y=co2e_ttw_per_car.loc['icev', 'Mittelklasse']*x + co2e_production_one_car.loc['icev', 'Mittelklasse']))
-    print(f"co2e_ttw_per_car:{co2e_ttw_per_car.loc['icev', 'Mittelklasse']}")
-    print(f"co2e_production_one_car{co2e_production_one_car.loc['bev', 'Mittelklasse']}")
-    fig_production_comparison.add_trace(go.Scatter(
-        x=x,
-        y=co2e_ttw_per_car.loc['hev', 'Mittelklasse'] * x + co2e_production_one_car.loc['hev', 'Mittelklasse']
+        y=co2_per_car.loc['icev', f"{segment}"] * x + co2e_production_one_car.loc['icev', f"{segment}"],
+        name='icev'
     ))
-    fig_production_comparison.add_trace(go.Scatter(
+    fig_production_comparison_per_year.add_trace(go.Scatter(
         x=x,
-        y=co2e_ttw_per_car.loc['bev', 'Mittelklasse'] * x + co2e_production_one_car.loc['bev', 'Mittelklasse']
+        y=co2_per_car.loc['hev', f"{segment}"] * x + co2e_production_one_car.loc['hev', f"{segment}"],
+        name='hev'
     ))
-    fig_production_comparison.add_trace(go.Scatter(
+    fig_production_comparison_per_year.add_trace(go.Scatter(
         x=x,
-        y=co2e_ttw_per_car.loc['phev', 'Mittelklasse'] * x + co2e_production_one_car.loc['phev', 'Mittelklasse']
+        y=co2_per_car.loc['phev', f"{segment}"] * x + co2e_production_one_car.loc['phev', f"{segment}"],
+        name='phev'
     ))
-    fig_production_comparison.update_layout(
+    fig_production_comparison_per_year.add_trace(go.Scatter(
+        x=x,
+        y=co2_per_car.loc['bev', f"{segment}"] * x + co2e_production_one_car.loc['bev', f"{segment}"],
+        name='bev'
+    ))
+    fig_production_comparison_per_year.update_layout(
         plot_bgcolor='#002b36',  # color Solar stylesheet
         paper_bgcolor='#002b36',
         font_color='white',
     )
-    return fig_production_comparison
+    return fig_production_comparison_per_year
+
+
+def get_fig_production_comparison_per_km(co2_per_car_per_km, segment):
+    x = np.arange(300000)
+
+    fig_production_comparison_per_km = go.Figure(go.Scatter(
+        x=x,
+        y=co2_per_car_per_km.loc['icev', f"{segment}"] * x + co2e_production_one_car.loc['icev', f"{segment}"],
+        name='icev'
+    ))
+    fig_production_comparison_per_km.add_trace(go.Scatter(
+        x=x,
+        y=co2_per_car_per_km.loc['hev', f"{segment}"] * x + co2e_production_one_car.loc['hev', f"{segment}"],
+        name='hev'
+    ))
+    fig_production_comparison_per_km.add_trace(go.Scatter(
+        x=x,
+        y=co2_per_car_per_km.loc['phev', f"{segment}"] * x + co2e_production_one_car.loc['phev', f"{segment}"],
+        name='phev'
+    ))
+    fig_production_comparison_per_km.add_trace(go.Scatter(
+        x=x,
+        y=co2_per_car_per_km.loc['bev', f"{segment}"] * x + co2e_production_one_car.loc['bev', f"{segment}"],
+        name='bev'
+    ))
+    fig_production_comparison_per_km.update_layout(
+        plot_bgcolor='#002b36',  # color Solar stylesheet
+        paper_bgcolor='#002b36',
+        font_color='white',
+    )
+    return fig_production_comparison_per_km
 
 
 def get_fig_lca_waterfall(chosen_scenario_name, chosen_lca, chosen_vehicle_class, chosen_segment, is_recycling_displayed):

@@ -51,6 +51,52 @@ def calculate_yearly_consumption_kwh(df_data: pd.DataFrame):
     return consumption_manufacturer_kwh_per_year
 
 
+def calculate_consumption_liter_per_km(df_data: pd.DataFrame):
+    """
+        Calculate yearly fuel consumption in liters based on manufacturer's data.
+
+        :param df_data: (pd.DataFrame) A DataFrame containing vehicle data, including manufacturer's consumption and mileage.
+
+        :return: (pandas Series) A Series containing the calculated yearly fuel consumption in liters for each vehicle.
+
+        Example:
+            df = pd.DataFrame({'Vehicle': ['Car1', 'Car2', 'Car3'],
+                               'consumption_manufacturer_l': [6.5, 8.0, 7.2],
+                               'mileage': [15000, 20000, 18000]})
+            yearly_consumption = calculate_yearly_consumption_liter(df)
+            # Output:
+            # 0     975.0
+            # 1    1600.0
+            # 2    1296.0
+        """
+    consumption_manufacturer_liter_per_km = df_data['consumption_manufacturer_l']/100
+    return consumption_manufacturer_liter_per_km
+
+
+def calculate_consumption_kwh_per_km(df_data: pd.DataFrame):
+    """
+        Calculate yearly energy consumption in kilowatt-hours (kWh) based on manufacturer's data.
+
+        :param df_data: (pd.DataFrame) A DataFrame containing vehicle data, including manufacturer's energy consumption
+                        in kilowatt-hours (kWh) and mileage.
+
+        :return: (pandas Series) A Series containing the calculated yearly energy consumption in kilowatt-hours (kWh)
+                 for each vehicle.
+
+        Example:
+            df = pd.DataFrame({'Vehicle': ['Car1', 'Car2', 'Car3'],
+                               'consumption_manufacturer_kWh': [15, 20, 18],
+                               'mileage': [15000, 20000, 18000]})
+            yearly_consumption = calculate_yearly_consumption_kwh(df)
+            # Output:
+            # 0    2250
+            # 1    4000
+            # 2    3240
+        """
+    consumption_manufacturer_kwh_per_km = df_data['consumption_manufacturer_kWh']/100
+    return consumption_manufacturer_kwh_per_km
+
+
 def get_vehicle_class(df_data: pd.DataFrame):
     vehicle_class_list = df_data.index.get_level_values(0).unique()
     # print(f"vehicle_class_list: {vehicle_class_list}")
@@ -104,6 +150,45 @@ def get_consumption_per_year(consumption_per_100km, df_data):
     consumption_per_km = consumption_per_100km/100
     consumption_per_year = consumption_per_km*df_data['mileage']
     return consumption_per_year
+
+
+def get_co2e_usage_ttw_per_car_per_km(dataframe_consumption_per_km_liter_with_energy_supply, dataframe_consumption_per_km_kWh_with_energy_supply,  dataframe_with_co2e_values):
+    """
+        Calculate and return a pandas Series containing calculated CO2 equivalent emissions (CO2e) per car for each row in the input dataframe.
+
+        This function calculates the CO2e emissions produced during the Well-to-Tank (WtT) phase of the vehicle energy supply chain
+        based on the provided consumption data and operational characteristics.
+
+        Parameters:
+        :param dataframe_consumption_per_year_liter_with_energy_supply: (pandas DataFrame) A DataFrame containing consumption data in liters for each car.
+        :param dataframe_consumption_per_year_kWh_with_energy_supply: (pandas DataFrame) A DataFrame containing consumption data in kilowatt-hours (kWh) for each car.
+        :param dataframe_with_co2e_values: (pandas DataFrame) A DataFrame containing operational characteristics and energy supply information for each car.
+
+        Returns:
+        :return calculated_co2_series: (pandas Series) A Series containing the calculated CO2e emissions per car for each corresponding row in the input dataframe_with_co2e_values.
+
+        Note:
+        - The 'energysupply' column in dataframe_og is expected to have values 'gasoline', 'diesel', 'battery' or 'hybrid'.
+        - CO2e emissions are calculated based on the energy supply type, consumption data, and CO2e factors provided in dataframe_og.
+        - For 'gasoline' and 'diesel' energy supplies, CO2e emissions are calculated using consumption data in liters and appropriate CO2e factors.
+        - For 'battery' energy supply, CO2e emissions are currently not calculated (set to 0).
+        - If the 'energysupply' column contains any other value, the calculated CO2e is set to NaN.
+        """
+    calculated_co2_series = pd.Series(index=dataframe_with_co2e_values.index)
+    for ind in dataframe_with_co2e_values.index:
+        row = dataframe_with_co2e_values.loc[ind]
+        if row['energysupply'] == 'gasoline':
+            calculated_co2e = dataframe_consumption_per_km_liter_with_energy_supply['consumption_manufacturer_l'][ind] * (row['share_E5_totalgasoline'] * row['co2e_E5_TtW'] + row['share_E10_totalgasoline'] * row['co2e_E10_TtW']+ row['share_bioliq_totalgasoline'] * row['co2e_bioliq_TtW']+ row['share_ptl_totalgasoline'] * row['co2e_ptl_TtW'])
+        elif row['energysupply'] == 'diesel':
+            calculated_co2e = dataframe_consumption_per_km_liter_with_energy_supply['consumption_manufacturer_l'][ind] * (row['share_D7_totaldiesel'] * row['co2e_D7_TtW'] + row['share_hvo_totaldiesel'] * row['co2e_hvo_TtW'])
+        elif row['energysupply'] == 'battery':
+            calculated_co2e = dataframe_consumption_per_km_kWh_with_energy_supply['consumption_manufacturer_kWh'][ind] * row['co2e_electricity_TtW']
+        elif row['energysupply'] == 'hybrid':
+            calculated_co2e = dataframe_consumption_per_km_liter_with_energy_supply['consumption_manufacturer_l'][ind] * (row['share_E5_totalgasoline'] * row['co2e_E5_TtW'] + row['share_E10_totalgasoline'] * row['co2e_E10_TtW']) + dataframe_consumption_per_km_kWh_with_energy_supply['consumption_manufacturer_kWh'][ind] * row['co2e_electricity_TtW']
+        else:
+            calculated_co2e = None
+        calculated_co2_series[ind] = calculated_co2e
+    return calculated_co2_series
 
 
 def get_co2e_usage_ttw_per_car(dataframe_consumption_per_year_liter_with_energy_supply, dataframe_consumption_per_year_kWh_with_energy_supply,  dataframe_with_co2e_values):
@@ -173,9 +258,48 @@ def get_co2e_usage_ttw_per_segment(series_with_calculated_co2e, dataframe_with_v
         row = dataframe_with_vehicle_stock.loc[ind]
         calculated_co2e_per_segment = series_with_calculated_co2e[ind] * row['vehicle_stock']
         calculated_co2e_per_segment_series[ind] = calculated_co2e_per_segment
-       # print(f"calculated_co2e_per_segment:{calculated_co2e_per_segment}")
-       # print(f" calculated_co2e_per_segment_series { calculated_co2e_per_segment_series}")
     return calculated_co2e_per_segment_series
+
+
+def get_co2e_usage_wtw_per_car_per_km(dataframe_consumption_per_km_liter_with_energy_supply, dataframe_consumption_per_km_kWh_with_energy_supply,  dataframe_with_co2e_values):
+    """
+        Calculate the CO2 equivalent (CO2e) usage per car based on consumption data and CO2e values.
+
+        :param dataframe_consumption_per_year_liter_with_energy_supply: A pandas DataFrame containing consumption data
+                                                                      per year in liters with energy supply information.
+        :type dataframe_consumption_per_year_liter_with_energy_supply: pd.DataFrame
+
+        :param dataframe_consumption_per_year_kWh_with_energy_supply: A pandas DataFrame containing consumption data
+                                                                   per year in kilowatt-hours (kWh) with energy supply information.
+        :type dataframe_consumption_per_year_kWh_with_energy_supply: pd.DataFrame
+
+        :param dataframe_with_co2e_values: A pandas DataFrame containing CO2e values and energy supply information.
+        :type dataframe_with_co2e_values: pd.DataFrame
+
+        :return: A pandas Series with calculated CO2e usage per car for each row in the input DataFrame.
+        :rtype: pd.Series
+
+        This function iterates through the rows in the input DataFrame (dataframe_with_co2e_values) and calculates
+        the CO2e usage per car based on the provided consumption data and CO2e values. The resulting CO2e values
+        are stored in a Series and returned.
+
+        Note: The input DataFrames must have matching indices for this function to work correctly.
+        """
+    calculated_co2_series = pd.Series(index=dataframe_with_co2e_values.index)
+    for ind in dataframe_with_co2e_values.index:
+        row = dataframe_with_co2e_values.loc[ind]
+        if row['energysupply'] == 'gasoline':
+            calculated_co2e = dataframe_consumption_per_km_liter_with_energy_supply['consumption_manufacturer_l'][ind] * (row['share_E5_totalgasoline'] * row['co2e_E5_WtW'] + row['share_E10_totalgasoline'] * row['co2e_E10_WtW'] + row['share_bioliq_totalgasoline'] * row['co2e_bioliq_WtW']+ row['share_ptl_totalgasoline'] * row['co2e_ptl_WtW'])
+        elif row['energysupply'] == 'diesel':
+            calculated_co2e = dataframe_consumption_per_km_liter_with_energy_supply['consumption_manufacturer_l'][ind] * (row['share_D7_totaldiesel'] * row['co2e_D7_WtW'] + row['share_hvo_totaldiesel'] * row['co2e_hvo_WtW'])
+        elif row['energysupply'] == 'battery':
+            calculated_co2e = dataframe_consumption_per_km_kWh_with_energy_supply['consumption_manufacturer_kWh'][ind] * row['co2e_electricity_WtW']
+        elif row['energysupply'] == 'hybrid':
+            calculated_co2e = dataframe_consumption_per_km_liter_with_energy_supply['consumption_manufacturer_l'][ind] * (row['share_E5_totalgasoline'] * row['co2e_E5_WtW'] + row['share_E10_totalgasoline'] * row['co2e_E10_WtW']) + dataframe_consumption_per_km_kWh_with_energy_supply['consumption_manufacturer_kWh'][ind] * row['co2e_electricity_WtW']
+        else:
+            calculated_co2e = None
+        calculated_co2_series[ind] = calculated_co2e
+    return calculated_co2_series
 
 
 def get_co2e_usage_wtw_per_car(dataframe_consumption_per_year_liter_with_energy_supply, dataframe_consumption_per_year_kWh_with_energy_supply,  dataframe_with_co2e_values):
@@ -274,7 +398,6 @@ def calculate_production_co2e_per_car(dataframe):
         row = dataframe.loc[ind]
         calculated_co2e_production = row['glider_weight'] * row['co2e_production'] + (row['power_electric_engine'] + row['power_electric_engine_2'])*row['co2e_electric_engine'] + row['battery_capacity_brutto']*row['co2e_battery_production'] + row['weight_electric_drivechain']*row['co2e_drivechain']
         calculated_co2e_production_series[ind] = calculated_co2e_production
-    print(f"calculated_co2e_production_series{calculated_co2e_production_series}")
     return calculated_co2e_production_series
 
 
@@ -293,11 +416,7 @@ def calculate_production_co2e_per_vehicle_class(series_production_co2e_per_car, 
             'phev': calculated_co2e_production_per_vehicle_class_phev,
             'bev': calculated_co2e_production_per_vehicle_class_bev}
     calculated_co2e_production_per_vehicle_class_all_series = pd.Series(data=data, index=['icev', 'hev', 'phev', 'bev'])
-    print(f"calculated_co2e_production_per_vehicle_class_all_series:{calculated_co2e_production_per_vehicle_class_all_series}")
     return calculated_co2e_production_per_vehicle_class_all_series
-
-
-
 
 
 def calculate_co2e_savings(dataframe):

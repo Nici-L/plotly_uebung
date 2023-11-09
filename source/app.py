@@ -59,57 +59,122 @@ app.layout = dbc.Container([
         dbc.Col([html.Div([
             dbc.Accordion([
                 dbc.AccordionItem([
-                           dbc.Button(['share of E5 on total gasoline',
-                                       dbc.Badge("%", color="light", text_color="primary", className="ms-1")],
-                                      id='share_E5_totalgasoline_button', n_clicks=0, color='primary', class_name='button m-2'),
-                           dcc.Input(id="share_E5", type="number", placeholder="share E5", style={'marginRight':'10px'}, value=90),
+                    dbc.Row([
+                        dbc.Col([
+                            dbc.Button(['share of E5',
+                                       dbc.Badge("%", color="light", text_color="primary", className="ms-1")], id='share_E5_totalgasoline_button', n_clicks=0, color='primary', class_name='button m-2'),
+                            dcc.Input(id="share_E5", type="number", placeholder="share E5", style={'marginRight':'10px', "width":"16%"}, value=2.3),
+                        ]),
+                        dbc.Col([
+                            dbc.Button(['share of E10',
+                                        dbc.Badge("%", color="light", text_color="primary", className="ms-1")], id='share_E10_totalgasoline_button', n_clicks=0, color='primary', class_name='button m-2'),
+                            dcc.Input(id="share_E10", type="number", placeholder="share E10", style={'marginRight': '10px', "width":"16%"}, value=2.3),
+                        ]),
+                        dbc.Col([
+                            dbc.Button(['share of diesel',
+                                       dbc.Badge("%", color="light", text_color="primary", className="ms-1")], id='share_diesel_button', n_clicks=0, color='primary', class_name='button m-2'),
+                            dcc.Input(id="share_diesel", type="number", placeholder="share diesel", style={'marginRight': '10px', "width":"16%"}, value=100),
+                        ]),
+                    ]),
+                    dbc.Row([
+                        dbc.Col([
+                            dbc.Button(['co2e E5',
+                                       dbc.Badge("%", color="light", text_color="primary", className="ms-1")], id='co2e_E5_button', n_clicks=0, color='primary', class_name='button m-2'),
+                            dcc.Input(id="co2e_E5", type="number", placeholder="Co<sub>2e</sub> E5", style={'marginRight': '10px', "width":"16%"}, value=90),
+                        ]),
+                        dbc.Col([
+                            dbc.Button(['co2e E10',
+                                       dbc.Badge("%", color="light", text_color="primary", className="ms-1")], id='co2e_E10_button', n_clicks=0, color='primary', class_name='button m-2'),
+                            dcc.Input(id="co2e_E10", type="number", placeholder="Co<sub>2e</sub> E10", style={'marginRight': '10px', "width":"16%"}, value=90),
+                        ]),
+                        dbc.Col([
+                            dbc.Button(['co2e diesel',
+                                        dbc.Badge("%", color="light", text_color="primary", className="ms-1")], id='co2e_diesel_button', n_clicks=0, color='primary', class_name='button m-2'),
+                            dcc.Input(id="co2e_diesel", type="number", placeholder="Co<sub>2e</sub> Diesel (B7)", style={'marginRight': '10px', "width":"16%"}, value=2.3),
+                        ]),
+                    ]),
+                    dbc.Row([
+                        dbc.Col([
+                            dbc.Button(['share of HVO',
+                                        dbc.Badge("%", color="light", text_color="primary", className="ms-1")], id='share_HVO_button', n_clicks=0, color='primary', class_name='button m-2'),
+                            dcc.Input(id="share_HVO", type="number", placeholder="share of HVO", style={'marginRight': '10px', "width":"16%"}, value=90),
+                        ]),
+                        dbc.Col([
+                            dbc.Button(['share of PtL on total diesel',
+                                        dbc.Badge("%", color="light", text_color="primary", className="ms-1")], id='share_PtL_totaldiesel_button', n_clicks=0, color='primary', class_name='button m-2'),
+                            dcc.Input(id="share_PtL", type="number", placeholder="share PtL", style={'marginRight':'10px', "width":"16%"}, value=2.3),
+                        ]),
+                        dbc.Col([
+                            dbc.Button(['share of Bioliq on total gasoline',
+                                        dbc.Badge("%", color="light", text_color="primary", className="ms-1")], id='share_bioliq_totalgasoline_button', n_clicks=0, color='primary', class_name='button m-2'),
+                            dcc.Input(id="share_bioliq", type="number", placeholder="share Bioliq", style={'marginRight':'10px', "width":"16%"}, value=2.3),
+                        ]),
+                    ]),
+                    dbc.Row([
+                        dbc.Col([
+                            dbc.Button(['co2e HVO',
+                                        dbc.Badge("%", color="light", text_color="primary", className="ms-1")], id='co2e_HVO_button', n_clicks=0, color='primary', class_name='button m-2'),
+                            dcc.Input(id="co2e_HVO", type="number", placeholder="Co<sub>2e</sub> HVO", style={'marginRight': '10px', "width":"16%"}, value=0.5),
+                        ]),
+                        dbc.Col([
+                            dbc.Button(['co2e PtL',
+                                        dbc.Badge("%", color="light", text_color="primary", className="ms-1")], id='co2e_PtL_button', n_clicks=0, color='primary', class_name='button m-2'),
+                            dcc.Input(id="co2e_PtL", type="number", placeholder="Co<sub>2e</sub> PtL", style={'marginRight': '10px', "width": "16%"}, value=90),
+                        ]),
+                        dbc.Col([
+                            dbc.Button(['Co2 bioliq',
+                                        dbc.Badge("%", color="light", text_color="primary", className="ms-1")], id='co2e_bioliq_button', n_clicks=0, color='primary', class_name='button m-2'),
+                            dcc.Input(id="co2e_bioliq", type="number", placeholder="Co<sub>2e</sub> Bioliq", style={'marginRight': '10px', "width": "16%"}, value=90),
+                        ])
+                    ]),
+                    dbc.Row([
+                        dbc.Col([
+                            dbc.Button(['Co2 emitted during production of electricity',
+                                       dbc.Badge("g/kWh", color="light", text_color="primary", className="ms-1")], id='co2e_electricity_button', n_clicks=0, color='primary', class_name='button m-2'),
+                            dcc.Input(id="co2e_electricity", type="number", placeholder="Co<sub>2e</sub> electricity", style={'marginRight': '10px', "width":"16%"}, value=400),
+                        ]),
+                        dbc.Col([
+                            dbc.Button(['vehicle stock',
+                                        dbc.Badge("mio", color="light", text_color="primary", className="ms-1")], id='vehicle_stock_button', n_clicks=0, color='primary', class_name='button m-2'),
+                            dcc.Input(id="vehicle_stock", type="number", placeholder="vehicle stock",  style={'marginRight': '10px', "width":"16%"}, value=48),
+                        ]),
+                        dbc.Col([
 
-                           dbc.Button(['share of E10 on total gasoline',
-                                       dbc.Badge("%", color="light", text_color="primary", className="ms-1")],
-                                      id='share_E10_totalgasoline_button', n_clicks=0, color='primary', class_name='button m-2'),
-                           dcc.Input(id="share_E10", type="number", placeholder="share E10", style={'marginRight': '10px'}, value=10),
+                        ]),
+                    ]),
+                    dbc.Row([
+                        dbc.Col([
+                            dbc.Button(['share icev_g',
+                                        dbc.Badge("%", color="light", text_color="primary", className="ms-1")], id='share_icev_button', n_clicks=0, color='primary', class_name='button m-2'),
+                            dcc.Input(id="share_icev_g", type="number", placeholder="share icev_g", style={'marginRight': '10px', "width": "16%"}, value=70),
+                        ]),
+                        dbc.Col([
+                            dbc.Button(['share icev_d',
+                                       dbc.Badge("%", color="light", text_color="primary", className="ms-1")], id='share_icev_d_button', n_clicks=0, color='primary', class_name='button m-2'),
+                            dcc.Input(id="share_icev_d", type="number", placeholder="share icev_d", style={'marginRight':'10px', "width":"16%"}, value=0),
+                        ]),
+                        dbc.Col([
+                            dbc.Button(['share hev',
+                                        dbc.Badge("%", color="light", text_color="primary", className="ms-1")], id='share_hev_button', n_clicks=0, color='primary', class_name='button m-2'),
+                            dcc.Input(id="share_hev", type="number", placeholder="share hev", style={'marginRight': '10px', "width": "16%"}, value=10),
+                        ]),
+                    ]),
+                    dbc.Row([
+                        dbc.Col([
+                            dbc.Button(['share phev',
+                                       dbc.Badge("%", color="light", text_color="primary", className="ms-1")], id='share_phev_button', n_clicks=0, color='primary', class_name='button m-2'),
+                            dcc.Input(id="share_phev", type="number", placeholder="share phev",  style={'marginRight': '10px', "width":"16%"}, value=10),
+                        ]),
+                        dbc.Col([
+                            dbc.Button(['share bev',
+                                        dbc.Badge("%", color="light", text_color="primary", className="ms-1")], id='share_bev_button', n_clicks=0, color='primary', class_name='button m-2'),
+                            dcc.Input(id="share_bev", type="number", placeholder="share_bev", style={'marginRight': '10px', "width": "16%"}, value=10),
+                        ]),
+                        dbc.Col([
 
-                           dbc.Button(['share of diesel',
-                                       dbc.Badge("%", color="light", text_color="primary", className="ms-1")],
-                                      id='share_diesel_button', n_clicks=0, color='primary', class_name='button m-2'),
-                           dcc.Input(id="share_diesel", type="number", placeholder="share diesel", style={'marginRight': '10px'}, value=100),
-
-                           dbc.Button(['co2e emitted during production of electricity',
-                                       dbc.Badge("g/kWh", color="light", text_color="primary", className="ms-1")],
-                                      id='co2e_electricity_button', n_clicks=0, color='primary', class_name='button m-2'),
-                           dcc.Input(id="co2e_electricity", type="number", placeholder="co2e electricity", style={'marginRight': '10px'}, value=400),
-
-                           dbc.Button(['vehicle stock',
-                                       dbc.Badge("mio", color="light", text_color="primary", className="ms-1")],
-                                      id='vehicle_stock_button', n_clicks=0, color='primary', class_name='button m-2'),
-                           dcc.Input(id="vehicle_stock", type="number", placeholder="vehicle stock",  style={'marginRight': '10px'}, value=48),
-
-                           dbc.Button(['share icev_g',
-                                       dbc.Badge("%", color="light", text_color="primary", className="ms-1")],
-                                      id='share_icev_button', n_clicks=0, color='primary', class_name='button m-2'),
-                           dcc.Input(id="share_icev_g", type="number", placeholder="share icev_g",style={'marginRight': '10px'}, value=70),
-
-                           dbc.Button(['share icev_d',
-                                       dbc.Badge("%", color="light", text_color="primary", className="ms-1")],
-                                      id='share_icev_d_button', n_clicks=0, color='primary', class_name='button m-2'),
-                           dcc.Input(id="share_icev_d", type="number", placeholder="share icev_d", style={'marginRight':'10px'}, value=0),
-
-                           dbc.Button(['share hev',
-                                       dbc.Badge("%", color="light", text_color="primary", className="ms-1")],
-                                      id='share_hev_button', n_clicks=0, color='primary', class_name='button m-2'),
-                           dcc.Input(id="share_hev", type="number", placeholder="share hev", style={'marginRight': '10px'}, value=10),
-
-                           dbc.Button(['share phev',
-                                       dbc.Badge("%", color="light", text_color="primary", className="ms-1")],
-                                      id='share_phev_button', n_clicks=0, color='primary', class_name='button m-2'),
-                           dcc.Input(id="share_phev", type="number", placeholder="share phev",  style={'marginRight': '10px'}, value=10),
-
-                           dbc.Button(['share bev',
-                                       dbc.Badge("%", color="light", text_color="primary", className="ms-1")],
-                                      id='share_bev_button', n_clicks=0, color='primary', class_name='button m-2'),
-                           dcc.Input(id="share_bev", type="number", placeholder="share_bev", style={'marginRight': '10px'}, value=10),
-
-                           html.Div([
+                        ]),
+                    ]),
+                    html.Div([
                                dbc.Button(id='calculate-button', n_clicks=0, children='calculate', color='success', size='lg', class_name='m-3 calculate-button'),
                                dbc.Button(id='reset-button', n_clicks=0, children='reset', color='success', size='lg', class_name='m-3 calculate-button')
                            ]),
@@ -147,7 +212,7 @@ app.layout = dbc.Container([
                         n_clicks=0,
                     ),
                     dbc.Collapse(
-                        dbc.Card(dbc.CardBody("The Co2e emissions of Germany are defined by the government. This official number was taken and multiplied with 68% which is the share passenger cars hold on total Co2e emissions caused by traffic.")),
+                        dbc.Card(dbc.CardBody("The Co<sub>2e</sub> emissions of Germany are defined by the government. This official number was taken and multiplied with 68% which is the share passenger cars hold on total Co2e emissions caused by traffic.")),
                         id="collapse",
                         is_open=False,
                     ),
@@ -176,8 +241,13 @@ app.layout = dbc.Container([
                         n_clicks=0,
                     ),
                     dbc.Collapse(
-                        dbc.Card(dbc.CardBody(
-                            "Data: Kraftfahrbundesamt")),
+                        dbc.Card(dbc.CardBody([
+                            html.H5('Data for vehicle stock:', className="fw-bold"),
+                            html.P("Kraftfahrbundesamt"),
+                            html.H5("Calculation:"),
+                            html.P("co2e emitted during usage multiplied with average consumption per segment")
+                        ])
+            ),
                         id="collapse 2",
                         is_open=False,
                     ),
@@ -283,7 +353,11 @@ app.layout = dbc.Container([
     ]),
     dbc.Row([
         dbc.Col([
-           dcc.Graph(id='fig_production_comparison', figure=fig.get_fig_production_comparison())
+           dcc.Dropdown(options=['TtW', 'WtW'], id='chose_lca_scatter_plot', value='TtW', className='Dropdown-2'),
+           dcc.Dropdown(options=fig.selected_scenario.index.get_level_values(1).unique(), id='lca-segment-production-comparison', value='Mittelklasse', className='Dropdown-2'),
+           dcc.Dropdown(options=['per year', 'per km'], id='chose_km_or_year', value='per year', className='Dropdown-2'),
+           dcc.Graph(id='fig_production_comparison', figure=fig.get_fig_production_comparison_per_year(co2_per_car=fig.co2e_ttw_per_car, segment='Mittelklasse'))
+
         ])
     ]),
     dbc.Row([
