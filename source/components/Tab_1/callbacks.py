@@ -142,7 +142,7 @@ def register_callbacks(app_instance):
         # fig.selected_scenario.loc[('icev', slice(None)), 'vehicle_stock'] = vehicle_stock_icev_g * fig.selected_scenario.loc[('icev', slice(None)), 'share_on_total_vehicles_of_class']
         # selected_scenario.loc[('hev', slice(None)), 'vehicle_stock'] = (vehicle_stock * share_hev) * selected_scenario.loc[('hev', slice(None)), 'shareontotalvehicles']
 
-        return share_E5, share_E10, share_diesel, co2e_electricity, vehicle_stock, share_icev_g, share_hev, share_phev, share_bev, share_icev_d
+        return share_E5, share_E10, share_diesel, co2e_electricity, vehicle_stock, share_icev_g, share_icev_d, share_hev, share_phev, share_bev
 
 
 # callback for reset button
@@ -177,9 +177,6 @@ def register_callbacks(app_instance):
         share_phev = ((1 / fig.selected_scenario['vehicle_stock'].sum()) * fig.selected_scenario.loc[('phev', slice(None)), 'vehicle_stock']).sum()
 
         # selected_scenario.loc[('hev', slice(None)), 'vehicle_stock'] = (vehicle_stock * share_hev) * selected_scenario.loc[('hev', slice(None)), 'shareontotalvehicles']
-        # selected_scenario.loc[('phev', slice(None)), 'vehicle_stock'] = (vehicle_stock * share_phev) * selected_scenario.loc[('phev', slice(None)), 'shareontotalvehicles']
-        # selected_scenario.loc[('bev', slice(None)), 'vehicle_stock'] = (vehicle_stock * share_bev) * selected_scenario.loc[('bev', slice(None)), 'shareontotalvehicles']
-
 
         share_hev = int(share_hev*100)
         share_icev = int(share_icev*100)
@@ -270,7 +267,6 @@ def register_callbacks(app_instance):
             return fig_consumption
         else:
             return no_update
-
 
     # callback for scenario comparison
     @app_instance.callback(

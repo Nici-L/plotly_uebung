@@ -263,7 +263,6 @@ def init_global_variables(selected_scenario_name: str = None, scenario_df: pd.Da
 
 
 init_global_variables(scenario_filenames[0].get('value'))
-# calc.calculate_production_co2e_per_vehicle_class(series_production_co2e_per_car=co2e_production_one_car, dataframe=selected_scenario)
 
 
 def get_fig_sum_total_co2e(co2e_series, dataframe):
@@ -290,10 +289,10 @@ def get_fig_sum_total_co2e(co2e_series, dataframe):
         title=dict(text="Total CO<sub>2e</sub> emitted by passenger cars per year in kg", font=dict(size=15, color="lightgray", family="verdana")),
         margin=dict(l=20, r=20, t=80, b=20)
     )
-    emission_target_2030 = dataframe['new_emission_targets_germany_2030_fleet'].iloc[0]
+    emission_target_2030 = dataframe['new_emission_targets_germany_2030_fleet'].iloc[0]  # ['emission_target_de_30']
     fig_sum_total_co2e.add_trace(
         go.Bar(
-            x=['Co<sub>2e</sub> target 2030 Germany'],
+            x=['Co<sub>2e</sub> target Germany'],
             y=[emission_target_2030],
             marker_color=clr.green1_base,
             name='target 2030',
@@ -302,7 +301,6 @@ def get_fig_sum_total_co2e(co2e_series, dataframe):
     )
     fig_sum_total_co2e.update_traces(width=0.4)
     # fig_sum_total_co2e.add_annotation(x=['co2e 2022'], y=[y_icev_sum], text="mio t", showarrow=True)
-
     return fig_sum_total_co2e
 
 
@@ -379,6 +377,9 @@ def get_fig_production_comparison_per_year(co2_per_car, segment):
         name='bev'
     ))
     fig_production_comparison_per_year.update_layout(
+        title='accumulated Co<sub>2e</sub> of different powertrains per year',
+        yaxis_title="Co<sub>2e</sub> in kg",
+        xaxis_title="",
         plot_bgcolor='#002b36',  # color Solar stylesheet
         paper_bgcolor='#002b36',
         font_color='white',
@@ -410,6 +411,9 @@ def get_fig_production_comparison_per_km(co2_per_car_per_km, segment):
         name='bev'
     ))
     fig_production_comparison_per_km.update_layout(
+        title='accumulated Co<sub>2e</sub> of different powertrains per km',
+        yaxis_title="Co<sub>2e</sub> in kg",
+        xaxis_title="",
         plot_bgcolor='#002b36',  # color Solar stylesheet
         paper_bgcolor='#002b36',
         font_color='white',
@@ -485,20 +489,31 @@ def get_yearly_co2_fig():
     # print (f"x array {x_array_combined}")
     yearly_co2e_regression = calc.calc_quadratic_regression(x=x, y=y, x_new=x_new)
     y_array_combined = numpy.concatenate((y_since_1990, yearly_co2e_regression))
-
-    yearly_co2e_fig = go.Figure(data=go.Bar(x=x_array_combined, y=y_array_combined, marker_color=clr.green1_base))
-    yearly_co2e_fig.add_trace(
-        go.Scatter(
-            x=x_array_combined[-30:],
-            y=numpy.cumsum(y_array_combined[-30:]),
-            yaxis='y2',
+    yearly_co2e_fig = go.Figure(data=go.Bar(
+        x=x_array_combined,
+        y=y_array_combined,
+        marker_color=clr.green1_base,
+        name="Co<sub>2e</sub> per year",
+    ))
+    yearly_co2e_fig.add_trace(go.Scatter(
+        x=x_array_combined[-30:],
+        y=numpy.cumsum(y_array_combined[-30:]),
+        yaxis='y2',
+        name="accumulated Co<sub>2e</sub>"
         )
     )
-    yearly_co2e_fig.add_shape(type="line", xref="paper", yref="y2", x0=0, y0=1220000000000, x1=1, y1=1220000000000, line=dict(
-        color="red",
-        dash="dash"
-    ),
-                              )
+    yearly_co2e_fig.add_shape(
+        type="line",
+        xref="paper",
+        yref="y2",
+        x0=0,
+        y0=1220000000000,
+        x1=1,
+        y1=1220000000000,
+        line=dict(color="red", dash="dash"),
+        label=dict(text="allowed Co<sub>2e</sub> budget", font=dict(color="red"))
+        )
+
     yearly_co2e_fig.update_layout(
         title='Co<sub>2e</sub> of passenger cars in Germany from 1990 until 2050',
         yaxis_title="co2e in kg",
@@ -509,11 +524,12 @@ def get_yearly_co2_fig():
         barmode='relative',
         hovermode="x unified",
         yaxis=dict(
-            title=dict(text="Total number of diners"),
+            title=dict(text="Co<sub>2e</sub> per year"),
             side="left",
+            range=[0, 120000000000]
         ),
         yaxis2=dict(
-            title=dict(text="Total bill amount"),
+            title=dict(text="Co<sub>2e</sub> accumulated since 2020"),
             side="right",
             range=[0, 2250000000000],
             overlaying="y",
