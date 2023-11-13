@@ -94,43 +94,43 @@ app.layout = dbc.Container([
                         ]),
                     ]),
                     dbc.Row([
-                        html.Div("Co2 of the available fuel types", style={"font-weight": "bold", "font-size": "20px", "margin-top": "20px"}),
+                        html.Div(['CO', html.Sub(2), 'e of the available fuel types'] , style={"font-weight": "bold", "font-size": "20px", "margin-top": "20px"}),
                     ]),
                     dbc.Row([
                         dbc.Col([
-                            html.Div('co2e E5', id='co2e_E5_button', style={"font-weight": "bold"}),
+                            html.Div(['CO', html.Sub(2), 'e E5'], id='co2e_E5_button', style={"font-weight": "bold"}),
                             dcc.Input(id="co2e_E5", type="number", placeholder=" E5", style={'marginRight': '10px', "width":"60%"}),
                             dbc.Badge("kg/l", color="dark", text_color="primary", className="ms-1")
                         ]),
                         dbc.Col([
-                            html.Div('co2e E10', id='co2e_E10_button', style={"font-weight": "bold"}),
+                            html.Div(['CO', html.Sub(2), 'e E10'], id='co2e_E10_button', style={"font-weight": "bold"}),
                             dcc.Input(id="co2e_E10", type="number", placeholder="E10", style={'marginRight': '10px', "width":"60%"}),
                             dbc.Badge("kg/l", color="dark", text_color="primary", className="ms-1")
                         ]),
                         dbc.Col([
-                            html.Div('co2e diesel', id='co2e_diesel_button', style={"font-weight": "bold"}),
+                            html.Div(['CO', html.Sub(2), 'e Diesel'], id='co2e_diesel_button', style={"font-weight": "bold"}),
                             dcc.Input(id="co2e_diesel", type="number", placeholder="B7", style={'marginRight': '10px', "width":"60%"}),
                             dbc.Badge("kg/l", color="dark", text_color="primary", className="ms-1")
                         ]),
                         dbc.Col([
-                            html.Div('co2e HVO', id='co2e_HVO_button', style={"font-weight": "bold"}),
+                            html.Div(['CO', html.Sub(2), 'e HVO'], id='co2e_HVO_button', style={"font-weight": "bold"}),
                             dcc.Input(id="co2e_HVO", type="number", placeholder="HVO", style={'marginRight': '10px', "width":"60%"}),
                             dbc.Badge("kg/l", color="dark", text_color="primary", className="ms-1")
                         ]),
                         dbc.Col([
-                            html.Div('co2e PtL', id='co2e_PtL_button', style={"font-weight": "bold"}),
+                            html.Div(['CO', html.Sub(2), 'e PtL'], id='co2e_PtL_button', style={"font-weight": "bold"}),
                             dcc.Input(id="co2e_PtL", type="number", placeholder="PtL", style={'marginRight': '10px', "width":"60%"}),
                             dbc.Badge("kg/l", color="dark", text_color="primary", className="ms-1")
                         ]),
                         dbc.Col([
-                            html.Div('Co2 bioliq', id='co2e_bioliq_button', style={"font-weight": "bold"}),
+                            html.Div(['CO', html.Sub(2), 'e bioliq'], id='co2e_bioliq_button', style={"font-weight": "bold"}),
                             dcc.Input(id="co2e_bioliq", type="number", placeholder="Bioliq", style={'marginRight': '10px', "width":"60%"}),
                             dbc.Badge("kg/l", color="dark", text_color="primary", className="ms-1")
                         ]),
                         dbc.Row([
                             dbc.Col([
-                                html.Div('Co2 production of electricity', id='co2e_electricity_button', style={"font-weight": "bold"}),
-                                dcc.Input(id="co2e_electricity", type="number", placeholder="Emission electricity", style={'marginRight': '10px', "width":"30%"}),
+                                html.Div(['CO', html.Sub(2), 'e production of electricity'], id='co2e_electricity_button', style={"font-weight": "bold"}),
+                                dcc.Input(id="co2e_electricity", type="number", placeholder="Emission electricity", style={'marginRight': '10px', "width":"20%"}),
                                 dbc.Badge("g/kWh", color="dark", text_color="primary", className="ms-1")
                             ]),
                         ]),

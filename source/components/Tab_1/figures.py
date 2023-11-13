@@ -292,13 +292,23 @@ def get_fig_sum_total_co2e(co2e_series, dataframe):
     emission_target_2030 = dataframe['new_emission_targets_germany_2030_fleet'].iloc[0]  # ['emission_target_de_30']
     fig_sum_total_co2e.add_trace(
         go.Bar(
-            x=['Co<sub>2e</sub> target Germany'],
+            x=['Co<sub>2e</sub> target Germany 2030'],
             y=[emission_target_2030],
             marker_color=clr.green1_base,
             name='target 2030',
             text=int(emission_target_2030*(10**(-9)))
         )
     )
+    # emission_target_2040 = dataframe['emission_target_de_40'].iloc[0]
+    # fig_sum_total_co2e.add_trace(
+    #   go.Bar(
+    #        x=['Co<sub>2e</sub> target Germany 2040'],
+    #        y=[emission_target_2040],
+    #        marker_color=clr.green1_base,
+    #        name='target 2030',
+    #        text=int(emission_target_2040 * (10 ** (-9)))
+    #    )
+    # )
     fig_sum_total_co2e.update_traces(width=0.4)
     # fig_sum_total_co2e.add_annotation(x=['co2e 2022'], y=[y_icev_sum], text="mio t", showarrow=True)
     return fig_sum_total_co2e
@@ -465,7 +475,7 @@ def get_fig_lca_waterfall(chosen_scenario_name, chosen_lca, chosen_vehicle_class
         totals={"marker": {"color": clr.green1_base, "line": {"color": "rgba(0,113,98,1)", "width": 3}}}
     ))
     fig_lca_waterfall.update_layout(
-        title="LCA of a single car",
+        title="LCA of a single car with a lifetime expectancy of 10.1 years",
         showlegend=True,
         plot_bgcolor='#002b36',  # color Solar stylesheet
         paper_bgcolor='#002b36',
