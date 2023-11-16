@@ -16,6 +16,7 @@ def register_callbacks(app_instance):
         prevent_initial_call=True
     )
     def update_scenario_selection(scenario_chosen):
+
         fig.init_global_variables(selected_scenario_name=scenario_chosen)
         return f'You have selected: {scenario_chosen}'
 
@@ -37,7 +38,7 @@ def register_callbacks(app_instance):
         ],
         prevent_initial_call=True
     )
-    def update_parameter_menu_calculate_button(n, share_E5, share_E10, share_diesel, co2e_electricity, vehicle_stock, share_icev_g, share_hev, share_phev, share_bev, share_icev_d):
+    def update_parameter_menu_calculate_button(n, share_E5, share_E10, share_diesel, co2e_electricity, vehicle_stock, share_icev_g, share_icev_d, share_hev, share_phev, share_bev):
         share_hev = share_hev/100
         share_icev_g = share_icev_g/100
         share_icev_d = share_icev_d/100
@@ -57,25 +58,22 @@ def register_callbacks(app_instance):
         fig.selected_scenario.loc[(vehicle_classes_list_without_lkw, slice(None)), 'co2e_electricity_WtW'] = co2e_electricity
         fig.selected_scenario['vehicle_stock'] = fig.selected_scenario['shareontotalvehicles'] * vehicle_stock
 
+        df_icev = fig.selected_scenario.loc[('icev', slice(None))]
         vehicle_stock_icev_g = vehicle_stock * share_icev_g
-        fig.selected_scenario.loc[('icev', slice(None)), 'vehicle_stock'] = vehicle_stock_icev_g * fig.selected_scenario.loc[('icev', slice(None)), 'share_on_total_vehicles_of_class']
-        # print(vehicle_stock_icev_g * fig.selected_scenario.loc[('icev', slice(None)), 'share_on_total_vehicles_of_class'])
-        # vehicle_stock_icev_d = vehicle_stock * share_icev_d
-        # fig.selected_scenario.loc[('icev', slice(None)), 'vehicle_stock'] = vehicle_stock_icev_d * fig.selected_scenario.loc[('icev', slice(None)), 'share_on_total_vehicles_of_class']
+        df_icev.loc[df_icev['energysupply'] == 'gasoline', 'vehicle_stock'] = vehicle_stock_icev_g * df_icev.loc[df_icev['energysupply'] == 'gasoline', 'share_on_total_vehicles_of_class']
 
+        vehicle_stock_icev_d = vehicle_stock * share_icev_d
+        df_icev.loc[df_icev['energysupply'] == 'diesel', 'vehicle_stock'] = vehicle_stock_icev_d * df_icev.loc[df_icev['energysupply'] == 'diesel', 'share_on_total_vehicles_of_class']
+
+        df_hev = fig.selected_scenario.loc[('hev', slice(None))]
         vehicle_stock_hev = vehicle_stock * share_hev
-        fig.selected_scenario.loc[('hev', slice(None)), 'vehicle_stock'] = vehicle_stock_hev * fig.selected_scenario.loc[('hev', slice(None)), 'share_on_total_vehicles_of_class']
+        df_hev.loc[df_icev['energysupply'] == 'gasoline', 'vehicle_stock'] = vehicle_stock_hev * df_hev.loc[df_icev['energysupply'] == 'gasoline', 'share_on_total_vehicles_of_class']
 
         vehicle_stock_phev = vehicle_stock * share_phev
         fig.selected_scenario.loc[('phev', slice(None)), 'vehicle_stock'] = vehicle_stock_phev * fig.selected_scenario.loc[('phev', slice(None)), 'share_on_total_vehicles_of_class']
 
         vehicle_stock_bev = vehicle_stock * share_bev
         fig.selected_scenario.loc[('bev', slice(None)), 'vehicle_stock'] = vehicle_stock_bev * fig.selected_scenario.loc[('bev', slice(None)), 'share_on_total_vehicles_of_class']
-
-        # fig.selected_scenario.loc[('icev', slice(None)), 'vehicle_stock'] = (vehicle_stock * share_icev) * fig.selected_scenario.loc[('icev', slice(None)), 'shareontotalvehicles']
-        # fig.selected_scenario.loc[('hev', slice(None)), 'vehicle_stock'] = (vehicle_stock * share_hev) * fig.selected_scenario.loc[('hev', slice(None)), 'shareontotalvehicles']
-        # fig.selected_scenario.loc[('phev', slice(None)), 'vehicle_stock'] = (vehicle_stock * share_phev) * fig.selected_scenario.loc[('phev', slice(None)), 'shareontotalvehicles']
-        # fig.selected_scenario.loc[('bev', slice(None)), 'vehicle_stock'] = (vehicle_stock * share_bev) * fig.selected_scenario.loc[('bev', slice(None)), 'shareontotalvehicles']
 
         fig.init_global_variables(selected_scenario_name=None, scenario_df=fig.selected_scenario)
 
@@ -86,28 +84,27 @@ def register_callbacks(app_instance):
     @app_instance.callback(
         # State(component_id='input_consumption', component_property='value'),
         [
-            Output(component_id='share_E5', component_property='value', allow_duplicate=True),
-            Output(component_id='share_E10', component_property='value', allow_duplicate=True),
-            Output(component_id='share_diesel', component_property='value', allow_duplicate=True),
-            Output(component_id='share_HVO', component_property='value', allow_duplicate=True),
-            Output(component_id='share_PtL', component_property='value', allow_duplicate=True),
-            Output(component_id='share_bioliq', component_property='value', allow_duplicate=True),
-            Output(component_id='co2e_electricity', component_property='value', allow_duplicate=True),
-            Output(component_id='vehicle_stock', component_property='value', allow_duplicate=True),
-            Output(component_id='share_icev_g', component_property='value', allow_duplicate=True),
-            Output(component_id='share_icev_d', component_property='value', allow_duplicate=True),
-            Output(component_id='share_hev', component_property='value', allow_duplicate=True),
-            Output(component_id='share_phev', component_property='value', allow_duplicate=True),
-            Output(component_id='share_bev', component_property='value', allow_duplicate=True),
-            Output(component_id='co2e_E5', component_property='value', allow_duplicate=True),
-            Output(component_id='co2e_E10', component_property='value', allow_duplicate=True),
-            Output(component_id='co2e_diesel', component_property='value', allow_duplicate=True),
-            Output(component_id='co2e_HVO', component_property='value', allow_duplicate=True),
-            Output(component_id='co2e_PtL', component_property='value', allow_duplicate=True),
-            Output(component_id='co2e_bioliq', component_property='value', allow_duplicate=True),
+            Output(component_id='share_E5', component_property='value'),
+            Output(component_id='share_E10', component_property='value'),
+            Output(component_id='share_diesel', component_property='value'),
+            Output(component_id='share_HVO', component_property='value'),
+            Output(component_id='share_PtL', component_property='value'),
+            Output(component_id='share_bioliq', component_property='value'),
+            Output(component_id='co2e_electricity', component_property='value'),
+            Output(component_id='vehicle_stock', component_property='value'),
+            Output(component_id='share_icev_g', component_property='value'),
+            Output(component_id='share_icev_d', component_property='value'),
+            Output(component_id='share_hev', component_property='value'),
+            Output(component_id='share_phev', component_property='value'),
+            Output(component_id='share_bev', component_property='value'),
+            Output(component_id='co2e_E5', component_property='value'),
+            Output(component_id='co2e_E10', component_property='value'),
+            Output(component_id='co2e_diesel', component_property='value'),
+            Output(component_id='co2e_HVO', component_property='value'),
+            Output(component_id='co2e_PtL', component_property='value'),
+            Output(component_id='co2e_bioliq', component_property='value'),
         ],
         Input(component_id='output_input_div', component_property='children'),
-        prevent_initial_call=True
     )
     def update_parameter_menu(scenario_selection_string):
 
@@ -135,7 +132,6 @@ def register_callbacks(app_instance):
         hev_g_share = hev_g_vehicle_stock / fig.selected_scenario['vehicle_stock'].sum()
 
         phev_vehicle_stock = fig.selected_scenario.loc[('phev', slice(None)), 'total_number_of_cars_in_class'][0]
-        # phev_g_vehicle_stock = df_phev.loc[df_icev['energysupply'] == 'gasoline'
         phev_share = phev_vehicle_stock / fig.selected_scenario['vehicle_stock'].sum()
 
         bev_vehicle_stock = fig.selected_scenario.loc[('bev', slice(None)), 'total_number_of_cars_in_class'][0]
@@ -172,19 +168,19 @@ def register_callbacks(app_instance):
 # callback for reset button
     @app_instance.callback(
         # State(component_id='input_consumption', component_property='value'),
-        [Output(component_id='share_E5', component_property='value'),
-         Output(component_id='share_E10', component_property='value'),
-         Output(component_id='share_diesel', component_property='value'),
+        [Output(component_id='share_E5', component_property='value', allow_duplicate=True),
+         Output(component_id='share_E10', component_property='value', allow_duplicate=True),
+         Output(component_id='share_diesel', component_property='value', allow_duplicate=True),
          Output(component_id='share_HVO', component_property='value', allow_duplicate=True),
          Output(component_id='share_PtL', component_property='value', allow_duplicate=True),
          Output(component_id='share_bioliq', component_property='value', allow_duplicate=True),
-         Output(component_id='co2e_electricity', component_property='value'),
-         Output(component_id='vehicle_stock', component_property='value'),
-         Output(component_id='share_icev_g', component_property='value'),
-         Output(component_id='share_icev_d', component_property='value'),
-         Output(component_id='share_hev', component_property='value'),
-         Output(component_id='share_phev', component_property='value'),
-         Output(component_id='share_bev', component_property='value'),
+         Output(component_id='co2e_electricity', component_property='value', allow_duplicate=True),
+         Output(component_id='vehicle_stock', component_property='value', allow_duplicate=True),
+         Output(component_id='share_icev_g', component_property='value', allow_duplicate=True),
+         Output(component_id='share_icev_d', component_property='value', allow_duplicate=True),
+         Output(component_id='share_hev', component_property='value', allow_duplicate=True),
+         Output(component_id='share_phev', component_property='value', allow_duplicate=True),
+         Output(component_id='share_bev', component_property='value', allow_duplicate=True),
          Output(component_id='co2e_E5', component_property='value', allow_duplicate=True),
          Output(component_id='co2e_E10', component_property='value', allow_duplicate=True),
          Output(component_id='co2e_diesel', component_property='value', allow_duplicate=True),
@@ -338,34 +334,7 @@ def register_callbacks(app_instance):
         prevent_initital_call=True
     )
     def update_comparison_graph(chosen_scenario_list, chosen_unit, show_details):
-        chosen_unit = str(chosen_unit).lower()
-        if not type(chosen_scenario_list) == list:
-            chosen_scenario_list = [chosen_scenario_list]
-        fig_comparison = go.Figure()
-        for scenario_name in chosen_scenario_list:
-            current_scenario_df = pd.read_csv(f'{config.SCENARIO_FOLDER_PATH}/{scenario_name}', sep=';', decimal=",", thousands='.', encoding="ISO-8859-1", index_col=[0, 1], skipinitialspace=True, header=[3])
-            scenario_var = fig.calculate_variables_based_on_scenario(current_scenario_df)
-            fig_comparison.add_trace(
-                go.Bar(
-                    y=[str(scenario_name).replace('_', ' ').replace('.CSV', '').replace('.csv', '')],
-                    x=[scenario_var[f"co2e_{chosen_unit}_per_segment"].sum()],
-                    orientation='h',
-                    marker_color=fig.clr.green1_base,
-                )
-            )
-            fig_comparison.update_layout(
-                title='Comparison between different scenarios',
-                legend_title_text="LCA",
-                plot_bgcolor='#002b36',  # color Solar stylesheet
-                paper_bgcolor='#002b36',
-                font_color='white',
-                barmode='group',
-                autosize=True,
-                showlegend=False,
-            )
-            fig_comparison.update_yaxes(title_text="Scenarios")
-            fig_comparison.update_xaxes(range=[0, 100000000000], autorange=False)
-            fig_comparison.update_traces(width=0.5)
+        fig_comparison = fig.get_fig_scenario_comparison(chosen_scenario_list=chosen_scenario_list, chosen_unit=chosen_unit)
         return fig_comparison
 
     @app_instance.callback(

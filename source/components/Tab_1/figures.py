@@ -271,14 +271,13 @@ def get_fig_sum_total_co2e(co2e_series, dataframe):
     y_phev_sum = co2e_series['phev'].sum()
     y_bev_sum = co2e_series['bev'].sum()
     fig_sum_total_co2e = go.Figure(data=[
-        go.Bar(name='icev', x=['Co<sub>2e</sub> 2022'], y=[y_icev_sum],  marker_color=clr.blue2_base, text=int(y_icev_sum*(10**(-9)))),
-        go.Bar(name='hev', x=['Co<sub>2e</sub> 2022'], y=[y_hev_sum], marker_color=clr.maygreen_base),
-        go.Bar(name='phev', x=['Co<sub>2e</sub> 2022'], y=[y_phev_sum], marker_color=clr.purple_base),
-        go.Bar(name='bev', x=['Co<sub>2e</sub> 2022'], y=[y_bev_sum], marker_color=clr.orange_base)
+        go.Bar(name='icev', x=['Co<sub>2e</sub> of <br> chosen scenario'], y=[y_icev_sum],  marker_color=clr.blue2_base, text=int((y_icev_sum + y_phev_sum + y_bev_sum + y_hev_sum)*(10**(-9)))),
+        go.Bar(name='hev', x=['Co<sub>2e</sub> of <br> chosen scenario'], y=[y_hev_sum], marker_color=clr.maygreen_base),
+        go.Bar(name='phev', x=['Co<sub>2e</sub> of <br> chosen scenario'], y=[y_phev_sum], marker_color=clr.purple_base),
+        go.Bar(name='bev', x=['Co<sub>2e</sub> of <br> chosen scenario'], y=[y_bev_sum], marker_color=clr.orange_base)
     ],
             layout={
                 'barmode': 'stack',
-                'title': 'total CO<sub>2e</sub> emitted by passenger cars <br> per year in kg',
                 'plot_bgcolor': '#002b36',  # color Solar stylesheet
                 'paper_bgcolor': '#002b36',
                 'font_color': 'white'
@@ -289,26 +288,26 @@ def get_fig_sum_total_co2e(co2e_series, dataframe):
         title=dict(text="Total CO<sub>2e</sub> emitted by passenger cars per year in kg", font=dict(size=15, color="lightgray", family="verdana")),
         margin=dict(l=20, r=20, t=80, b=20)
     )
-    emission_target_2030 = dataframe['new_emission_targets_germany_2030_fleet'].iloc[0]  # ['emission_target_de_30']
+    emission_target_2030 = dataframe['emission_target_de_30'].iloc[0]
     fig_sum_total_co2e.add_trace(
         go.Bar(
-            x=['Co<sub>2e</sub> target Germany 2030'],
+            x=['Co<sub>2e</sub> target <br> Germany 2030'],
             y=[emission_target_2030],
             marker_color=clr.green1_base,
             name='target 2030',
             text=int(emission_target_2030*(10**(-9)))
         )
     )
-    # emission_target_2040 = dataframe['emission_target_de_40'].iloc[0]
-    # fig_sum_total_co2e.add_trace(
-    #   go.Bar(
-    #        x=['Co<sub>2e</sub> target Germany 2040'],
-    #        y=[emission_target_2040],
-    #        marker_color=clr.green1_base,
-    #        name='target 2030',
-    #        text=int(emission_target_2040 * (10 ** (-9)))
-    #    )
-    # )
+    emission_target_2040 = dataframe['emission_target_de_40'].iloc[0]
+    fig_sum_total_co2e.add_trace(
+        go.Bar(
+            x=['Co<sub>2e</sub> target <br> Germany 2040'],
+            y=[emission_target_2040],
+            marker_color=clr.maygreen_base,
+            name='target 2030',
+            text=int(emission_target_2040 * (10 ** (-9)))
+        )
+     )
     fig_sum_total_co2e.update_traces(width=0.4)
     # fig_sum_total_co2e.add_annotation(x=['co2e 2022'], y=[y_icev_sum], text="mio t", showarrow=True)
     return fig_sum_total_co2e
@@ -337,6 +336,7 @@ def get_fig_consumption(co2e_dataframe, chosen_segments, chosen_vehicle_class):
     fig_consumption.update_layout(
             title='Fuel consumption per car in liter per 100 km',
             yaxis_title="vehicle class",
+            xaxis_title="l/100km",
             legend_title="segment",
             plot_bgcolor='#002b36',  # color Solar stylesheet
             paper_bgcolor='#002b36',
@@ -389,7 +389,7 @@ def get_fig_production_comparison_per_year(co2_per_car, segment):
     fig_production_comparison_per_year.update_layout(
         title='accumulated Co<sub>2e</sub> of different powertrains per year',
         yaxis_title="Co<sub>2e</sub> in kg",
-        xaxis_title="",
+        xaxis_title="year",
         plot_bgcolor='#002b36',  # color Solar stylesheet
         paper_bgcolor='#002b36',
         font_color='white',
@@ -423,12 +423,47 @@ def get_fig_production_comparison_per_km(co2_per_car_per_km, segment):
     fig_production_comparison_per_km.update_layout(
         title='accumulated Co<sub>2e</sub> of different powertrains per km',
         yaxis_title="Co<sub>2e</sub> in kg",
-        xaxis_title="",
+        xaxis_title="km",
         plot_bgcolor='#002b36',  # color Solar stylesheet
         paper_bgcolor='#002b36',
         font_color='white',
     )
     return fig_production_comparison_per_km
+
+
+def get_fig_scenario_comparison(chosen_scenario_list, chosen_unit):
+    chosen_unit = str(chosen_unit).lower()
+    if not type(chosen_scenario_list) == list:
+        chosen_scenario_list = [chosen_scenario_list]
+    fig_comparison = go.Figure()
+    for scenario_name in chosen_scenario_list:
+        current_scenario_df = pd.read_csv(f'{config.SCENARIO_FOLDER_PATH}/{scenario_name}', sep=';', decimal=",",
+                                          thousands='.', encoding="ISO-8859-1", index_col=[0, 1], skipinitialspace=True, header=[3])
+        scenario_var = calculate_variables_based_on_scenario(current_scenario_df)
+        fig_comparison.add_trace(
+            go.Bar(
+                y=[str(scenario_name).replace('_', ' ').replace('.CSV', '').replace('.csv', '')],
+                x=[scenario_var[f"co2e_{chosen_unit}_per_segment"].sum()],
+                orientation='h',
+                marker_color=clr.green1_base,
+            )
+        )
+        fig_comparison.update_layout(
+            title='Comparison between different scenarios',
+            yaxis_title="Scenarios",
+            xaxis_title="Co<sub>2e</sub> in kg",
+            legend_title_text="LCA",
+            plot_bgcolor='#002b36',  # color Solar stylesheet
+            paper_bgcolor='#002b36',
+            font_color='white',
+            barmode='group',
+            autosize=True,
+            showlegend=False,
+        )
+    #fig_comparison.update_yaxes(title_text="Scenarios")
+    fig_comparison.update_xaxes(range=[0, 100000000000], autorange=False)
+    fig_comparison.update_traces(width=0.5)
+    return fig_comparison
 
 
 def get_fig_lca_waterfall(chosen_scenario_name, chosen_lca, chosen_vehicle_class, chosen_segment, is_recycling_displayed):
@@ -527,7 +562,7 @@ def get_yearly_co2_fig():
     yearly_co2e_fig.update_layout(
         title='Co<sub>2e</sub> of passenger cars in Germany from 1990 until 2050',
         yaxis_title="co2e in kg",
-        xaxis_title="",
+        xaxis_title="year",
         plot_bgcolor='#002b36',  # color Solar stylesheet
         paper_bgcolor='#002b36',
         font_color='white',

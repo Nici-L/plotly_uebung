@@ -16,10 +16,6 @@ def calculate_yearly_consumption_liter(df_data: pd.DataFrame):
                                'consumption_manufacturer_l': [6.5, 8.0, 7.2],
                                'mileage': [15000, 20000, 18000]})
             yearly_consumption = calculate_yearly_consumption_liter(df)
-            # Output:
-            # 0     975.0
-            # 1    1600.0
-            # 2    1296.0
         """
     consumption_manufacturer_liter_per_km = df_data['consumption_manufacturer_l']/100
     consumption_manufacturer_liter_per_year = consumption_manufacturer_liter_per_km * df_data['mileage']
@@ -41,10 +37,6 @@ def calculate_yearly_consumption_kwh(df_data: pd.DataFrame):
                                'consumption_manufacturer_kWh': [15, 20, 18],
                                'mileage': [15000, 20000, 18000]})
             yearly_consumption = calculate_yearly_consumption_kwh(df)
-            # Output:
-            # 0    2250
-            # 1    4000
-            # 2    3240
         """
     consumption_manufacturer_kwh_per_km = df_data['consumption_manufacturer_kWh']/100
     consumption_manufacturer_kwh_per_year = consumption_manufacturer_kwh_per_km * df_data['mileage']
@@ -64,10 +56,6 @@ def calculate_consumption_liter_per_km(df_data: pd.DataFrame):
                                'consumption_manufacturer_l': [6.5, 8.0, 7.2],
                                'mileage': [15000, 20000, 18000]})
             yearly_consumption = calculate_yearly_consumption_liter(df)
-            # Output:
-            # 0     975.0
-            # 1    1600.0
-            # 2    1296.0
         """
     consumption_manufacturer_liter_per_km = df_data['consumption_manufacturer_l']/100
     return consumption_manufacturer_liter_per_km
@@ -88,10 +76,6 @@ def calculate_consumption_kwh_per_km(df_data: pd.DataFrame):
                                'consumption_manufacturer_kWh': [15, 20, 18],
                                'mileage': [15000, 20000, 18000]})
             yearly_consumption = calculate_yearly_consumption_kwh(df)
-            # Output:
-            # 0    2250
-            # 1    4000
-            # 2    3240
         """
     consumption_manufacturer_kwh_per_km = df_data['consumption_manufacturer_kWh']/100
     return consumption_manufacturer_kwh_per_km
@@ -112,13 +96,6 @@ def get_segments_per_vehicle_class(df_data: pd.DataFrame):
      :return: (pd.DataFrame or None) A DataFrame with segments for each vehicle class if data is found,
               otherwise None.
 
-     Example:
-         # Output:
-         #   VehicleClass  Segment
-         # 0
-         # 1
-         # 3
-         # 4
      """
     segments_per_vehicle_class = None
     for vehicle_class in get_vehicle_class(df_data):
@@ -142,10 +119,6 @@ def get_consumption_per_year(consumption_per_100km, df_data):
           mileage_data = pd.DataFrame({'Vehicle': ['Car1', 'Car2', 'Car3'],
                                        'mileage': [15000, 20000, 18000]})
           annual_consumption = get_consumption_per_year(consumption_100km, mileage_data)
-          # Output:
-          # 0    1125.0
-          # 1    1500.0
-          # 2    1350.0
       """
     consumption_per_km = consumption_per_100km/100
     consumption_per_year = consumption_per_km*df_data['mileage']
@@ -156,12 +129,12 @@ def get_co2e_usage_ttw_per_car_per_km(dataframe_consumption_per_km_liter_with_en
     """
         Calculate and return a pandas Series containing calculated CO2 equivalent emissions (CO2e) per car for each row in the input dataframe.
 
-        This function calculates the CO2e emissions produced during the Well-to-Tank (WtT) phase of the vehicle energy supply chain
+        This function calculates the CO2e emissions produced during the Tank-to-Wheel (TtT) phase of the vehicle energy supply chain
         based on the provided consumption data and operational characteristics.
 
         Parameters:
-        :param dataframe_consumption_per_year_liter_with_energy_supply: (pandas DataFrame) A DataFrame containing consumption data in liters for each car.
-        :param dataframe_consumption_per_year_kWh_with_energy_supply: (pandas DataFrame) A DataFrame containing consumption data in kilowatt-hours (kWh) for each car.
+        :param dataframe_consumption_per_km_liter_with_energy_supply: (pandas DataFrame) A DataFrame containing consumption data in liters for each car.
+        :param dataframe_consumption_per_km_kWh_with_energy_supply: (pandas DataFrame) A DataFrame containing consumption data in kilowatt-hours (kWh) for each car.
         :param dataframe_with_co2e_values: (pandas DataFrame) A DataFrame containing operational characteristics and energy supply information for each car.
 
         Returns:
@@ -171,7 +144,7 @@ def get_co2e_usage_ttw_per_car_per_km(dataframe_consumption_per_km_liter_with_en
         - The 'energysupply' column in dataframe_og is expected to have values 'gasoline', 'diesel', 'battery' or 'hybrid'.
         - CO2e emissions are calculated based on the energy supply type, consumption data, and CO2e factors provided in dataframe_og.
         - For 'gasoline' and 'diesel' energy supplies, CO2e emissions are calculated using consumption data in liters and appropriate CO2e factors.
-        - For 'battery' energy supply, CO2e emissions are currently not calculated (set to 0).
+        - For 'battery' energy supply, CO2e emissions are set to 0.
         - If the 'energysupply' column contains any other value, the calculated CO2e is set to NaN.
         """
     calculated_co2_series = pd.Series(index=dataframe_with_co2e_values.index)
@@ -210,7 +183,7 @@ def get_co2e_usage_ttw_per_car(dataframe_consumption_per_year_liter_with_energy_
         - The 'energysupply' column in dataframe_og is expected to have values 'gasoline', 'diesel', 'battery' or 'hybrid'.
         - CO2e emissions are calculated based on the energy supply type, consumption data, and CO2e factors provided in dataframe_og.
         - For 'gasoline' and 'diesel' energy supplies, CO2e emissions are calculated using consumption data in liters and appropriate CO2e factors.
-        - For 'battery' energy supply, CO2e emissions are currently not calculated (set to 0).
+        - For 'battery' energy supply, CO2e emissions are currently set to 0.
         - If the 'energysupply' column contains any other value, the calculated CO2e is set to NaN.
         """
     calculated_co2_series = pd.Series(index=dataframe_with_co2e_values.index)
@@ -265,13 +238,13 @@ def get_co2e_usage_wtw_per_car_per_km(dataframe_consumption_per_km_liter_with_en
     """
         Calculate the CO2 equivalent (CO2e) usage per car based on consumption data and CO2e values.
 
-        :param dataframe_consumption_per_year_liter_with_energy_supply: A pandas DataFrame containing consumption data
+        :param dataframe_consumption_per_km_liter_with_energy_supply: A pandas DataFrame containing consumption data
                                                                       per year in liters with energy supply information.
-        :type dataframe_consumption_per_year_liter_with_energy_supply: pd.DataFrame
+        :type dataframe_consumption_per_km_liter_with_energy_supply: pd.DataFrame
 
-        :param dataframe_consumption_per_year_kWh_with_energy_supply: A pandas DataFrame containing consumption data
+        :param dataframe_consumption_per_km_kWh_with_energy_supply: A pandas DataFrame containing consumption data
                                                                    per year in kilowatt-hours (kWh) with energy supply information.
-        :type dataframe_consumption_per_year_kWh_with_energy_supply: pd.DataFrame
+        :type dataframe_consumption_per_km_kWh_with_energy_supply: pd.DataFrame
 
         :param dataframe_with_co2e_values: A pandas DataFrame containing CO2e values and energy supply information.
         :type dataframe_with_co2e_values: pd.DataFrame
@@ -469,7 +442,7 @@ def calc_quadratic_regression(x, y, x_new):
            Note: At this time the regression is a quadratic regression however the input values are a linear regression so this might have to change in the future depending on the given scenario.
            """
     plt.plot(x, y)
-    plt.show()
+    # plt.show()
 
     # polynom approximation
     [a, b, c] = numpy.polyfit(x=x, y=y, deg=2)
@@ -480,7 +453,7 @@ def calc_quadratic_regression(x, y, x_new):
     # print(f"x_new : {x_new}")
     y_new = a * x_new[:] ** 2 + b * x_new[:] + c
     plt.plot(x_new, y_new)
-    plt.show()
+    # plt.show()
     # polynom approximation
     # vectorized calculation for entire array
     return y_new

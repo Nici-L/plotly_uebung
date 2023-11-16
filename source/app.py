@@ -13,12 +13,18 @@ from init_app import app
 import source.components.Tab_1.figures as fig
 from source.components.Tab_1 import callbacks as tab1_callbacks
 
+# todo: parameter callback zu methode
+# todo: dropdown ändern zu zweifach Auswahl --> Agora und im nächsten schritt die Jahreszahl
+# mit pandas oder nur auf Namen zugreifen?
+# szenario Namen splitten (split.())
+# ergibt array
+# letzter Eintrag ist immer Jahr
+# todo: Farbe allowed co2 budget
+# todo: Erklärungen/Quellen/Beschreibungen ergänzen
+# todo: Grafiken alignen
+# todo: comparison figure überarbeiten
 
-# init app
-# todo: Methoden Beschreibungen verbessern
-# todo: ausgrauen bei dropdown wenn es option nicht gibt
-# todo: genaue Zahlen an bars ergänzen
-# todo: hover labels für Fahrzeugmodell
+
 
 # app = dash.Dash(__name__, external_stylesheets=[dbc.themes.SOLAR], assets_url_path='/source/assets')
 
@@ -45,8 +51,11 @@ app.layout = dbc.Container([
         header.header_images,
     ]),
     dbc.Row([
-        html.Div([
-            dcc.Dropdown(options=scenario_filenames, id='scenario-dropdown', value=scenario_filenames[0].get('value'), className='Dropdown-2'),
+        dbc.Col([
+            html.Div([
+                dcc.Dropdown(options=scenario_filenames, id='scenario-dropdown', value=scenario_filenames[0].get('value'), className='Dropdown-2'),
+                dbc.Label("Choose a year"),
+            ]),
         ]),
     ]),
     dbc.Row([
@@ -94,7 +103,7 @@ app.layout = dbc.Container([
                         ]),
                     ]),
                     dbc.Row([
-                        html.Div(['CO', html.Sub(2), 'e of the available fuel types'] , style={"font-weight": "bold", "font-size": "20px", "margin-top": "20px"}),
+                        html.Div(['CO', html.Sub(2), 'e of the available fuel types'], style={"font-weight": "bold", "font-size": "20px", "margin-top": "20px"}),
                     ]),
                     dbc.Row([
                         dbc.Col([
@@ -222,7 +231,7 @@ app.layout = dbc.Container([
             html.Div(
                 children=[
                     dbc.Label("Select a segment and calculation"),
-                    dbc.Alert("In case of small numbers hover over the graph!", color="danger", dismissable=True, className='small-number-warning'),
+                    # dbc.Alert("In case of small numbers hover over the graph!", color="danger", dismissable=True, className='small-number-warning'),
                     dcc.Dropdown(options=fig.selected_scenario.index.get_level_values(1).unique(), id='choose-segments', value='Mini', searchable=False, className='Dropdown-2'),
                     dcc.Dropdown(options=['one car', 'all vehicles'], id='one_car_dropdown', value='all vehicles', className='Dropdown-2'),
                     dcc.Dropdown(options=['TtW', 'WtW'], id='TtW_vehicle_class_fig', value='TtW', className='Dropdown-2'),
@@ -268,7 +277,7 @@ app.layout = dbc.Container([
                                 dbc.Button(
                                     "More Information about the graph",
                                     id="collapse-button-3",
-                                    className="mb-3 collapse-button",
+                                    className="mb-3 colla pse-button",
                                     color="primary",
                                     n_clicks=0,
                                 ),
