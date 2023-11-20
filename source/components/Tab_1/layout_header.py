@@ -6,7 +6,7 @@ header_images = html.Div([
     dbc.Row([  # Row 1
         dbc.Col(
             html.Div(
-                html.Img(src=f"{config.PICTURES_FOLDER_PATH}/kit_logo.png", height="auto", width="100%")
+                html.Img(src=f"{config.PICTURES_FOLDER_PATH}/kit_logo.png", height="auto", width="80%")
             ),
             className="col-3",
             style={'height': '100%', 'text-align': 'center'}
@@ -14,7 +14,7 @@ header_images = html.Div([
         dbc.Col(  # Column for headline
             html.H2(children=["CO", html.Sub(2), " Fleet Development Calculator"],
                     className="header1 m-2 ms-5",
-                    style={'color': '#00876c', 'text-align': 'center'}),
+                    style={'color': '#00876c', 'text-align': 'center', 'width': '100%', "font-size": "50px"}),
             className="col-6",
             style={'height': '100%', 'text-align': 'center', 'display': 'flex'}),
         dbc.Col(  # Column for picture

@@ -1,5 +1,4 @@
 import datetime
-
 import plotly.graph_objects as go
 import plotly.express as px
 import source.utils.colors_KIT_plotly as clr
@@ -8,7 +7,6 @@ import source.utils.calculations as calc
 import source.config as config
 import numpy
 import os
-from plotly.subplots import make_subplots
 import numpy as np
 
 
@@ -18,7 +16,7 @@ for file in os.listdir(config.SCENARIO_FOLDER_PATH):
         # scenario_filenames.append(file)
         scenario_filenames.append({
             'value': file,
-            'label': file.replace('_', ' ').replace('.CSV', '').replace('.csv', '')
+            'label': file.replace('_', ' ').replace('.CSV', '').replace('.csv', ''),
         })
 print(f"scenario_filenames: {scenario_filenames}")
 
@@ -44,6 +42,7 @@ co2e_wtw_per_segment_df: pd.DataFrame
 co2e_production_one_car: pd.Series
 co2e_production_per_vehicle_class_all: pd.Series
 co2e_savings_one_car: pd.Series
+unique_dict_values: list
 
 
 map_colors = {
@@ -200,7 +199,7 @@ def init_global_variables(selected_scenario_name: str = None, scenario_df: pd.Da
     if scenario_df is None:
         selected_scenario = pd.read_csv(f'{config.SCENARIO_FOLDER_PATH}/{selected_scenario_name}', sep=';', decimal=",",
                                         thousands='.', encoding="ISO-8859-1", index_col=[0, 1], skipinitialspace=True,
-                                        header=[3])
+                                        header=[5])
     else:
         selected_scenario = scenario_df
     calculation_results = calculate_variables_based_on_scenario(selected_scenario)
@@ -278,15 +277,16 @@ def get_fig_sum_total_co2e(co2e_series, dataframe):
     ],
             layout={
                 'barmode': 'stack',
-                'plot_bgcolor': '#002b36',  # color Solar stylesheet
-                'paper_bgcolor': '#002b36',
+                'plot_bgcolor': '#003F50',  # color Solar stylesheet
+                'paper_bgcolor': '#003F50',
                 'font_color': 'white'
                 }
             )
     fig_sum_total_co2e.update_yaxes(range=[0, 100000000000], autorange=False)
     fig_sum_total_co2e.update_layout(
-        title=dict(text="Total CO<sub>2e</sub> emitted by passenger cars per year in kg", font=dict(size=15, color="lightgray", family="verdana")),
-        margin=dict(l=20, r=20, t=80, b=20)
+        title=dict(text="Total CO<sub>2e</sub> emitted by passenger cars per year in kg"), # , font=dict(size=15, color="lightgray", family="verdana")
+        margin=dict(l=20, r=20, t=80, b=20),
+        yaxis_title="CO<sub>2e</sub> in mio t",
     )
     emission_target_2030 = dataframe['emission_target_de_30'].iloc[0]
     fig_sum_total_co2e.add_trace(
@@ -433,12 +433,11 @@ def get_fig_production_comparison_per_km(co2_per_car_per_km, segment):
 
 def get_fig_scenario_comparison(chosen_scenario_list, chosen_unit):
     chosen_unit = str(chosen_unit).lower()
+    fig_comparison = go.Figure()
     if not type(chosen_scenario_list) == list:
         chosen_scenario_list = [chosen_scenario_list]
-    fig_comparison = go.Figure()
     for scenario_name in chosen_scenario_list:
-        current_scenario_df = pd.read_csv(f'{config.SCENARIO_FOLDER_PATH}/{scenario_name}', sep=';', decimal=",",
-                                          thousands='.', encoding="ISO-8859-1", index_col=[0, 1], skipinitialspace=True, header=[3])
+        current_scenario_df = pd.read_csv(f'{config.SCENARIO_FOLDER_PATH}/{scenario_name}', sep=';', decimal=",", thousands='.', encoding="ISO-8859-1", index_col=[0, 1], skipinitialspace=True, header=[5])
         scenario_var = calculate_variables_based_on_scenario(current_scenario_df)
         fig_comparison.add_trace(
             go.Bar(
@@ -446,12 +445,13 @@ def get_fig_scenario_comparison(chosen_scenario_list, chosen_unit):
                 x=[scenario_var[f"co2e_{chosen_unit}_per_segment"].sum()],
                 orientation='h',
                 marker_color=clr.green1_base,
+                text=int(scenario_var[f"co2e_{chosen_unit}_per_segment"].sum()*(10**(-9))),
             )
         )
         fig_comparison.update_layout(
             title='Comparison between different scenarios',
             yaxis_title="Scenarios",
-            xaxis_title="Co<sub>2e</sub> in kg",
+            xaxis_title="Co<sub>2e</sub> in mio t",
             legend_title_text="LCA",
             plot_bgcolor='#002b36',  # color Solar stylesheet
             paper_bgcolor='#002b36',
@@ -460,7 +460,6 @@ def get_fig_scenario_comparison(chosen_scenario_list, chosen_unit):
             autosize=True,
             showlegend=False,
         )
-    #fig_comparison.update_yaxes(title_text="Scenarios")
     fig_comparison.update_xaxes(range=[0, 100000000000], autorange=False)
     fig_comparison.update_traces(width=0.5)
     return fig_comparison
@@ -469,7 +468,7 @@ def get_fig_scenario_comparison(chosen_scenario_list, chosen_unit):
 def get_fig_lca_waterfall(chosen_scenario_name, chosen_lca, chosen_vehicle_class, chosen_segment, is_recycling_displayed):
     chosen_scenario_df = pd.read_csv(f'{config.SCENARIO_FOLDER_PATH}/{chosen_scenario_name}', sep=';', decimal=",",
                                      thousands='.', encoding="ISO-8859-1", index_col=[0, 1], skipinitialspace=True,
-                                     header=[3])
+                                     header=[5])
     scenario_var = calculate_variables_based_on_scenario(chosen_scenario_df)
     co2e_per_single_car_usage = scenario_var[f"co2e_{chosen_lca}_per_car"].to_frame('co2e')
     co2e_per_single_car_production = scenario_var['co2e_production_one_car'].to_frame('co2e')
@@ -528,7 +527,7 @@ def get_yearly_co2_fig():
                     104000000000, 104000000000, 107440000000, 108000000000, 109000000000, 111000000000, 113000000000,
                     110000000000]
     x = numpy.array([2019, 2030, 2045])
-    y = numpy.array([111520000000, selected_scenario['co2e_2030'].iloc[0], selected_scenario['co2e_2045'].iloc[0]])
+    y = numpy.array([111520000000, selected_scenario['emission_target_de_30'].iloc[0], selected_scenario['emission_target_de_45'].iloc[0]])
     x_new = numpy.arange(2019, 2050, 1)
     x_array_combined = numpy.concatenate((x_since_1990, x_new))
     # print (f"x array {x_array_combined}")
@@ -558,7 +557,6 @@ def get_yearly_co2_fig():
         line=dict(color="red", dash="dash"),
         label=dict(text="allowed Co<sub>2e</sub> budget", font=dict(color="red"))
         )
-
     yearly_co2e_fig.update_layout(
         title='Co<sub>2e</sub> of passenger cars in Germany from 1990 until 2050',
         yaxis_title="co2e in kg",
@@ -580,7 +578,76 @@ def get_yearly_co2_fig():
             overlaying="y",
             tickmode="sync",
         ),
-        showlegend=False,
+        showlegend=True,
+        legend=dict(
+            yanchor="top",
+            y=0.99,
+            xanchor="left",
+            x=0.85
+        )
     )
     return yearly_co2e_fig
 
+
+def get_parameter_menu_content(filename_of_scenario):
+    init_global_variables(selected_scenario_name=filename_of_scenario, scenario_df=None)
+    vehicle_classes_list_without_lkw = list(dict.fromkeys(selected_scenario.index.get_level_values(0).to_list()))
+    vehicle_classes_list_without_lkw.remove('lkw')
+
+    share_e5 = selected_scenario.loc[(vehicle_classes_list_without_lkw, slice(None)), 'share_E5_totalgasoline'].unique()
+    share_e10 = selected_scenario.loc[(vehicle_classes_list_without_lkw, slice(None)), 'share_E10_totalgasoline'].unique()
+    share_diesel = selected_scenario.loc[(vehicle_classes_list_without_lkw, slice(None)), 'share_D7_totaldiesel'].unique()
+    share_hvo = selected_scenario.loc[(vehicle_classes_list_without_lkw, slice(None)), 'share_hvo_totaldiesel'].unique()
+    share_ptl = selected_scenario.loc[(vehicle_classes_list_without_lkw, slice(None)), 'share_ptl_totalgasoline'].unique()
+    share_bioliq = selected_scenario.loc[(vehicle_classes_list_without_lkw, slice(None)), 'share_bioliq_totalgasoline'].unique()
+    co2e_electricity = selected_scenario.loc[(vehicle_classes_list_without_lkw, slice(None)), 'co2e_electricity_WtW'].unique()
+
+    df_icev = selected_scenario.loc[('icev', slice(None))]
+    icev_g_vehicle_stock = df_icev.loc[df_icev['energysupply'] == 'gasoline', 'total_number_of_cars_in_class'][0]
+    icev_g_share = icev_g_vehicle_stock / selected_scenario['vehicle_stock'].sum()
+
+    icev_d_vehicle_stock = df_icev.loc[df_icev['energysupply'] == 'diesel', 'total_number_of_cars_in_class'][0]
+    icev_d_share = icev_d_vehicle_stock / selected_scenario['vehicle_stock'].sum()
+
+    df_hev = selected_scenario.loc[('hev', slice(None))]
+    hev_g_vehicle_stock = df_hev.loc[df_icev['energysupply'] == 'gasoline', 'total_number_of_cars_in_class'][0]
+    hev_g_share = hev_g_vehicle_stock / selected_scenario['vehicle_stock'].sum()
+
+    hev_d_vehicle_stock = df_hev.loc[df_icev['energysupply'] == 'diesel', 'total_number_of_cars_in_class'][0]
+    hev_d_share = hev_d_vehicle_stock / selected_scenario['vehicle_stock'].sum()
+
+    phev_vehicle_stock = selected_scenario.loc[('phev', slice(None)), 'total_number_of_cars_in_class'][0]
+    phev_share = phev_vehicle_stock / selected_scenario['vehicle_stock'].sum()
+
+    bev_vehicle_stock = selected_scenario.loc[('bev', slice(None)), 'total_number_of_cars_in_class'][0]
+    bev_share = bev_vehicle_stock / selected_scenario['vehicle_stock'].sum()
+
+    co2e_e5_ttw = float(selected_scenario['co2e_E5_TtW'].unique())
+    co2e_e10_ttw = float(selected_scenario['co2e_E10_TtW'].unique())
+    co2e_b7_ttw = float(selected_scenario['co2e_D7_TtW'].unique())
+    co2e_hvo_ttw = float(selected_scenario['co2e_ptl_TtW'].unique())
+    co2e_ptl_ttw = float(selected_scenario['co2e_ptl_TtW'].unique())
+    co2e_bioliq_ttw = float(selected_scenario['co2e_bioliq_TtW'].unique())
+    co2e_e5_wtw = float(selected_scenario['co2e_E5_WtW'].unique())
+    co2e_e10_wtw = float(selected_scenario['co2e_E10_WtW'].unique())
+    co2e_b7_wtw = float(selected_scenario['co2e_D7_WtW'].unique())
+    co2e_hvo_wtw = float(selected_scenario['co2e_hvo_WtW'].unique())
+    co2e_ptl_wtw = float(selected_scenario['co2e_ptl_WtW'].unique())
+    co2e_bioliq_wtw = float(selected_scenario['co2e_bioliq_WtW'].unique())
+
+    vehicle_stock = int(selected_scenario['vehicle_stock'].sum() * 10 ** (-6))
+    share_hev_g = int(hev_g_share * 100)
+    share_hev_d = int(hev_d_share * 100)
+    share_icev_g = int(icev_g_share * 100)
+    share_icev_d = int(icev_d_share * 100)
+    share_phev = int(phev_share * 100)
+    share_bev = int(bev_share * 100)
+    share_diesel = int(share_diesel * 100)
+    share_hvo = int(share_hvo * 100)
+    share_ptl = int(share_ptl * 100)
+    share_bioliq = int(share_bioliq * 100)
+    share_e5 = int(share_e5 * 100)
+    share_e10 = int(share_e10 * 100)
+    co2e_electricity = int(co2e_electricity * 1000)
+
+    return share_e5, share_e10, share_diesel, share_hvo, share_ptl, share_bioliq, co2e_electricity, vehicle_stock, share_icev_g, share_icev_d, share_hev_g, share_hev_d, share_phev, share_bev, co2e_e5_ttw, co2e_e10_ttw, co2e_b7_ttw, co2e_hvo_ttw, co2e_ptl_ttw, co2e_bioliq_ttw, co2e_e5_wtw, co2e_e10_wtw, co2e_b7_wtw, co2e_hvo_wtw, co2e_ptl_wtw, co2e_bioliq_wtw

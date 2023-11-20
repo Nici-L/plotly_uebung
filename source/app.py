@@ -1,6 +1,7 @@
 import dash
 import dash_bootstrap_components as dbc
 import os
+import pandas as pd
 from matplotlib import pyplot as plt
 import source.components.Tab_1.layout_header as header
 from dash import html, dcc, Output, Input, State, no_update
@@ -15,10 +16,10 @@ from source.components.Tab_1 import callbacks as tab1_callbacks
 
 # todo: parameter callback zu methode
 # todo: dropdown ändern zu zweifach Auswahl --> Agora und im nächsten schritt die Jahreszahl
-# mit pandas oder nur auf Namen zugreifen?
-# szenario Namen splitten (split.())
-# ergibt array
-# letzter Eintrag ist immer Jahr
+# dictionary mit Modellname und Jahr ergänzen
+# values aus csv nehmen
+# muss es nochmal neu dafür in for loop eingelesen werden?
+#
 # todo: Farbe allowed co2 budget
 # todo: Erklärungen/Quellen/Beschreibungen ergänzen
 # todo: Grafiken alignen
@@ -32,13 +33,24 @@ from source.components.Tab_1 import callbacks as tab1_callbacks
 # read all available csv files names
 scenario_filenames = []
 for file in os.listdir(config.SCENARIO_FOLDER_PATH):
+    print(f"file: {file}")
+    scenario_data = pd.read_csv(f'{config.SCENARIO_FOLDER_PATH}/{file}', sep=';', encoding="ISO-8859-1")
+    year = scenario_data.iloc[0][0]
+    print(f"year: {year}")
+    model_name = scenario_data.iloc[0][1]
+    print(f"model_name: {model_name}")
     if file.endswith('.CSV') or file.endswith('.csv'):
         # scenario_filenames.append(file)
         scenario_filenames.append({
             'value': file,
-            'label': file.replace('_', ' ').replace('.CSV', '').replace('.csv', '')
+            'label': file.replace('_', ' ').replace('.CSV', '').replace('.csv', ''),
+            'year': year,
+            'modelname': model_name,
         })
 print(f"scenario_filenames: {scenario_filenames}")
+
+
+
 
 # use this in case the csv data has a lot of whitespaces
 # initial_scenario_no_ws = initial_scenario.to_string().strip(' ')
@@ -53,8 +65,17 @@ app.layout = dbc.Container([
     dbc.Row([
         dbc.Col([
             html.Div([
-                dcc.Dropdown(options=scenario_filenames, id='scenario-dropdown', value=scenario_filenames[0].get('value'), className='Dropdown-2'),
+                dcc.Dropdown(
+                    options=calc.get_unique_values_from_dict(data=scenario_filenames, key_of_interest='modelname'),
+                    id='scenario-dropdown',
+                    value=calc.get_unique_values_from_dict(data=scenario_filenames, key_of_interest='modelname')[0],
+                    className='Dropdown-2'),
                 dbc.Label("Choose a year"),
+                dbc.RadioItems(
+                    options=calc.get_unique_values_from_dict(data=scenario_filenames, key_of_interest='year', condition_dict={'modelname': calc.get_unique_values_from_dict(data=scenario_filenames, key_of_interest='modelname')[0]}),
+                    value=calc.get_unique_values_from_dict(data=scenario_filenames, key_of_interest='year', condition_dict={'modelname': calc.get_unique_values_from_dict(data=scenario_filenames, key_of_interest='modelname')[0]})[0],
+                    id="radioitems-input",
+                )
             ]),
         ]),
     ]),
@@ -72,73 +93,108 @@ app.layout = dbc.Container([
                     ]),
                     dbc.Row([
                         dbc.Col([
-                            html.Div('share of E5', id='share_E5_totalgasoline_button', style={"font-weight": "bold"}),
-                            dcc.Input(id="share_E5", type="number", placeholder="share E5"),
+                            html.Div('share of E5', id='share_E5_totalgasoline_button'), # , style={"font-weight": "bold"}
+                            dcc.Input(id="share_E5", type="number", placeholder="share E5", className='input-field'),
                             dbc.Badge("%", color="dark", text_color="primary", className="ms-1"),
                         ]),
                         dbc.Col([
-                            html.Div('share of E10', id='share_E10_totalgasoline_button', style={"font-weight": "bold"}),
+                            html.Div('share of E10', id='share_E10_totalgasoline_button'),
                             dcc.Input(id="share_E10", type="number", placeholder="share E10"),  # style={'marginRight': '10px', "width":"16%"}
                             dbc.Badge("%", color="dark", text_color="primary", className="ms-1")
                         ]),
                         dbc.Col([
-                            html.Div('share of diesel', id='share_diesel_button', style={"font-weight": "bold"}),
+                            html.Div('share of diesel', id='share_diesel_button'),
                             dcc.Input(id="share_diesel", type="number", placeholder="share diesel"),
                             dbc.Badge("%", color="dark", text_color="primary", className="ms-1")
                         ]),
                         dbc.Col([
-                            html.Div('share of HVO', id='share_HVO_button', style={"font-weight": "bold"}),
+                            html.Div('share of HVO', id='share_HVO_button'),
                             dcc.Input(id="share_HVO", type="number", placeholder="share of HVO"),
                             dbc.Badge("%", color="dark", text_color="primary", className="ms-1")
                         ]),
                         dbc.Col([
-                            html.Div('share of PtL', id='share_PtL_totaldiesel_button', style={"font-weight": "bold"}),
+                            html.Div('share of PtL', id='share_PtL_totaldiesel_button'),
                             dcc.Input(id="share_PtL", type="number", placeholder="share PtL"),
                             dbc.Badge("%", color="dark", text_color="primary", className="ms-1")
                         ]),
                         dbc.Col([
-                            html.Div('share of Bioliq', id='share_bioliq_totalgasoline_button', style={"font-weight": "bold"}),
+                            html.Div('share of Bioliq', id='share_bioliq_totalgasoline_button'),
                             dcc.Input(id="share_bioliq", type="number", placeholder="share Bioliq"),
                             dbc.Badge("%", color="dark", text_color="primary", className="ms-1")
                         ]),
                     ]),
                     dbc.Row([
-                        html.Div(['CO', html.Sub(2), 'e of the available fuel types'], style={"font-weight": "bold", "font-size": "20px", "margin-top": "20px"}),
+                        html.Div(['CO', html.Sub(2), 'e of the available fuel types for Tank-to-Wheel approach'], style={"font-weight": "bold", "font-size": "20px", "margin-top": "20px"}),
                     ]),
                     dbc.Row([
                         dbc.Col([
-                            html.Div(['CO', html.Sub(2), 'e E5'], id='co2e_E5_button', style={"font-weight": "bold"}),
-                            dcc.Input(id="co2e_E5", type="number", placeholder=" E5", style={'marginRight': '10px', "width":"60%"}),
+                            html.Div(['CO', html.Sub(2), 'e E5'], id='co2e_E5_button_ttw'),
+                            dcc.Input(id="co2e_E5_ttw", type="number", placeholder=" E5", style={'marginRight': '10px', "width":"60%"}),
                             dbc.Badge("kg/l", color="dark", text_color="primary", className="ms-1")
                         ]),
                         dbc.Col([
-                            html.Div(['CO', html.Sub(2), 'e E10'], id='co2e_E10_button', style={"font-weight": "bold"}),
-                            dcc.Input(id="co2e_E10", type="number", placeholder="E10", style={'marginRight': '10px', "width":"60%"}),
+                            html.Div(['CO', html.Sub(2), 'e E10'], id='co2e_E10_button_ttw'),
+                            dcc.Input(id="co2e_E10_ttw", type="number", placeholder="E10", style={'marginRight': '10px', "width":"60%"}),
                             dbc.Badge("kg/l", color="dark", text_color="primary", className="ms-1")
                         ]),
                         dbc.Col([
-                            html.Div(['CO', html.Sub(2), 'e Diesel'], id='co2e_diesel_button', style={"font-weight": "bold"}),
-                            dcc.Input(id="co2e_diesel", type="number", placeholder="B7", style={'marginRight': '10px', "width":"60%"}),
+                            html.Div(['CO', html.Sub(2), 'e Diesel'], id='co2e_diesel_button_ttw'),
+                            dcc.Input(id="co2e_diesel_ttw", type="number", placeholder="B7", style={'marginRight': '10px', "width":"60%"}),
                             dbc.Badge("kg/l", color="dark", text_color="primary", className="ms-1")
                         ]),
                         dbc.Col([
-                            html.Div(['CO', html.Sub(2), 'e HVO'], id='co2e_HVO_button', style={"font-weight": "bold"}),
-                            dcc.Input(id="co2e_HVO", type="number", placeholder="HVO", style={'marginRight': '10px', "width":"60%"}),
+                            html.Div(['CO', html.Sub(2), 'e HVO'], id='co2e_HVO_button_ttw'),
+                            dcc.Input(id="co2e_HVO_ttw", type="number", placeholder="HVO", style={'marginRight': '10px', "width":"60%"}),
                             dbc.Badge("kg/l", color="dark", text_color="primary", className="ms-1")
                         ]),
                         dbc.Col([
-                            html.Div(['CO', html.Sub(2), 'e PtL'], id='co2e_PtL_button', style={"font-weight": "bold"}),
-                            dcc.Input(id="co2e_PtL", type="number", placeholder="PtL", style={'marginRight': '10px', "width":"60%"}),
+                            html.Div(['CO', html.Sub(2), 'e PtL'], id='co2e_PtL_button_ttw'),
+                            dcc.Input(id="co2e_PtL_ttw", type="number", placeholder="PtL", style={'marginRight': '10px', "width":"60%"}),
                             dbc.Badge("kg/l", color="dark", text_color="primary", className="ms-1")
                         ]),
                         dbc.Col([
-                            html.Div(['CO', html.Sub(2), 'e bioliq'], id='co2e_bioliq_button', style={"font-weight": "bold"}),
-                            dcc.Input(id="co2e_bioliq", type="number", placeholder="Bioliq", style={'marginRight': '10px', "width":"60%"}),
+                            html.Div(['CO', html.Sub(2), 'e bioliq'], id='co2e_bioliq_button_ttw'),
+                            dcc.Input(id="co2e_bioliq_ttw", type="number", placeholder="Bioliq", style={'marginRight': '10px', "width":"60%"}),
+                            dbc.Badge("kg/l", color="dark", text_color="primary", className="ms-1")
+                        ]),
+                    ]),
+                    dbc.Row([
+                        html.Div(['CO', html.Sub(2), 'e of the available fuel types for Well-to-Wheel approach'], style={"font-weight": "bold", "font-size": "20px", "margin-top": "20px"}),
+                    ]),
+                    dbc.Row([
+                        dbc.Col([
+                            html.Div(['CO', html.Sub(2), 'e E5'], id='co2e_E5_button_wtw'),
+                            dcc.Input(id="co2e_E5_wtw", type="number", placeholder=" E5", style={'marginRight': '10px', "width":"60%"}),
+                            dbc.Badge("kg/l", color="dark", text_color="primary", className="ms-1")
+                        ]),
+                        dbc.Col([
+                            html.Div(['CO', html.Sub(2), 'e E10'], id='co2e_E10_button_wtw'),
+                            dcc.Input(id="co2e_E10_wtw", type="number", placeholder="E10", style={'marginRight': '10px', "width":"60%"}),
+                            dbc.Badge("kg/l", color="dark", text_color="primary", className="ms-1")
+                        ]),
+                        dbc.Col([
+                            html.Div(['CO', html.Sub(2), 'e Diesel'], id='co2e_diesel_button_wtw'),
+                            dcc.Input(id="co2e_diesel_wtw", type="number", placeholder="B7", style={'marginRight': '10px', "width":"60%"}),
+                            dbc.Badge("kg/l", color="dark", text_color="primary", className="ms-1")
+                        ]),
+                        dbc.Col([
+                            html.Div(['CO', html.Sub(2), 'e HVO'], id='co2e_HVO_button_wtw'),
+                            dcc.Input(id="co2e_HVO_wtw", type="number", placeholder="HVO", style={'marginRight': '10px', "width":"60%"}),
+                            dbc.Badge("kg/l", color="dark", text_color="primary", className="ms-1")
+                        ]),
+                        dbc.Col([
+                            html.Div(['CO', html.Sub(2), 'e PtL'], id='co2e_PtL_button_wtw'),
+                            dcc.Input(id="co2e_PtL_wtw", type="number", placeholder="PtL", style={'marginRight': '10px', "width":"60%"}),
+                            dbc.Badge("kg/l", color="dark", text_color="primary", className="ms-1")
+                        ]),
+                        dbc.Col([
+                            html.Div(['CO', html.Sub(2), 'e bioliq'], id='co2e_bioliq_button_wtw'),
+                            dcc.Input(id="co2e_bioliq_wtw", type="number", placeholder="Bioliq", style={'marginRight': '10px', "width":"60%"}),
                             dbc.Badge("kg/l", color="dark", text_color="primary", className="ms-1")
                         ]),
                         dbc.Row([
                             dbc.Col([
-                                html.Div(['CO', html.Sub(2), 'e production of electricity'], id='co2e_electricity_button', style={"font-weight": "bold"}),
+                                html.Div(['CO', html.Sub(2), 'e production of electricity'], id='co2e_electricity_button'),
                                 dcc.Input(id="co2e_electricity", type="number", placeholder="Emission electricity", style={'marginRight': '10px', "width":"20%"}),
                                 dbc.Badge("g/kWh", color="dark", text_color="primary", className="ms-1")
                             ]),
@@ -149,36 +205,44 @@ app.layout = dbc.Container([
                         ]),
                     dbc.Row([
                         dbc.Col([
-                            html.Div('vehicle stock', id='vehicle_stock_button', style={"font-weight": "bold"}),
+                            html.Div('vehicle stock', id='vehicle_stock_button'),
                             dcc.Input(id="vehicle_stock", type="number", placeholder="vehicle stock"),
                             dbc.Badge("mio", color="dark", text_color="primary", className="ms-1")
                         ]),
                         dbc.Col([
-                            html.Div('share icev_g', id='share_icev_button', style={"font-weight": "bold"}),
+                            html.Div('share of ICEV gasoline', id='share_icev_button'),
                             dcc.Input(id="share_icev_g", type="number", placeholder="share icev_g"),
                             dbc.Badge("%", color="dark", text_color="primary", className="ms-1")
                         ]),
                         dbc.Col([
-                            html.Div('share icev_d', id='share_icev_d_button', style={"font-weight": "bold"}),
+                            html.Div('share of ICEV diesel', id='share_icev_d_button'),
                             dcc.Input(id="share_icev_d", type="number", placeholder="share icev_d"),
                             dbc.Badge("%", color="dark", text_color="primary", className="ms-1")
                         ]),
                         dbc.Col([
-                            html.Div('share hev', id='share_hev_button', style={"font-weight": "bold"}),
-                            dcc.Input(id="share_hev", type="number", placeholder="share hev"),
+                            html.Div('share of HEV gasoline', id='share_hev_g_button'),
+                            dcc.Input(id="share_hev_g", type="number", placeholder="share hev_g"),
                             dbc.Badge("%", color="dark", text_color="primary", className="ms-1")
                         ]),
                     ]),
                     dbc.Row([
                         dbc.Col([
-                            html.Div('share phev',id='share_phev_button', style={"font-weight": "bold"}),
+                            html.Div('share of HEV diesel', id='share_hev_d_button'),
+                            dcc.Input(id="share_hev_d", type="number", placeholder="share hev_d"),
+                            dbc.Badge("%", color="dark", text_color="primary", className="ms-1")
+                        ]),
+                        dbc.Col([
+                            html.Div('share of PHEV',id='share_phev_button'),
                             dcc.Input(id="share_phev", type="number", placeholder="share phev"),
                             dbc.Badge("%", color="dark", text_color="primary", className="ms-1")
                         ]),
                         dbc.Col([
-                            html.Div('share bev',id='share_bev_button', style={"font-weight": "bold"} ),
+                            html.Div('share of BEV',id='share_bev_button'),
                             dcc.Input(id="share_bev", type="number", placeholder="share_bev"),
                             dbc.Badge("%", color="dark", text_color="primary", className="ms-1")
+                        ]),
+                        dbc.Col([
+
                         ]),
                     ]),
                     html.Div([
@@ -187,7 +251,7 @@ app.layout = dbc.Container([
                            ]),
                     ], title='parameter menu', class_name='m-3'),
                 ], start_collapsed=True, className='parameter-Accordion')
-            ]),
+            ]), # , style={'position': 'fixed', 'height':'600px'}
         ]),
     ]),
     dbc.Col([
@@ -195,7 +259,7 @@ app.layout = dbc.Container([
             dbc.AccordionItem([dbc.Button("What is TtW?", id="open-xl", n_clicks=0, className='button'),
                                dbc.Modal([
                                    dbc.ModalHeader(dbc.ModalTitle("TtW")),
-                                   dbc.ModalBody("TtW is an abreviation for Tank to Wheel and describes the boundaries of the Calculation. Tank to Wheel means, only the emissions the car is emitting between the tank and the wheel is being taken into account"),
+                                   dbc.ModalBody("TtW is an abreviation for Tank to Wheel and describes the boundaries of the Calculation. Only the emissions the car is emitting between the tank and the wheel is being taken into account"),
                                ], id="modal-xl", size="xl", is_open=False),
                                ], title='Information about the dashboard', class_name='m-3')
         ], start_collapsed=True)
@@ -219,7 +283,7 @@ app.layout = dbc.Container([
                         n_clicks=0,
                     ),
                     dbc.Collapse(
-                        dbc.Card(dbc.CardBody("The Co<sub>2e</sub> emissions of Germany are defined by the government. This official number was taken and multiplied with 68% which is the share passenger cars hold on total Co2e emissions caused by traffic.")),
+                        dbc.Card(dbc.CardBody("The Co<sub>2e</sub> targets of Germany are defined by the government. This official number was taken and multiplied with 68% which is the share passenger cars hold on total Co2e emissions caused by traffic.")),
                         id="collapse",
                         is_open=False,
                     ),
@@ -302,9 +366,10 @@ app.layout = dbc.Container([
             html.Div(
                 children=[
                     dbc.Label('Choose the scenarios'),
-                    dcc.Dropdown(options=scenario_filenames, id='scenario-dropdown-comparison', multi=True, value=scenario_filenames[0].get('value'), className='Dropdown-2'),
-                    dcc.Dropdown(options=['TtW', 'WtW'], id='chose_lca_comparison_fig', value='TtW', className='Dropdown-2'),
+                    dcc.Dropdown(options=[{key: scenario_dict[key] for key in ['value', 'label']} for scenario_dict in scenario_filenames], id='scenario-dropdown-comparison', multi=True, className='Dropdown-2'), # value=scenario_filenames[0].get('value'),
+                    dcc.Dropdown(options=['TtW', 'WtW'], id='chose_lca_comparison_fig', className='Dropdown-2'),
                     dbc.Switch(label='Show production and recycling per car', value=True, id='details-toggle-option', className='recycling_toggle_switch'),
+                    dbc.Button(id='selection-button-scenario-comparison', n_clicks=0, children='Apply selection', color='success', size='m', class_name='m-3 selection-button'),
                     dcc.Graph(id='scenario-comparison', figure={}, className='mt-5 scenario_comparison_fig')
                 ]
             ),
@@ -330,12 +395,12 @@ app.layout = dbc.Container([
             html.Div(
               children=[
                   dbc.Label('Select the car you want to see a detailed LCA of'),
-                  dcc.Dropdown(options=scenario_filenames, id='scenario-dropdown-lca', value=scenario_filenames[0].get('value'), className='Dropdown-2'),
+                  dcc.Dropdown(options=[{key: scenario_dict[key] for key in ['value', 'label']} for scenario_dict in scenario_filenames], value=scenario_filenames[0].get('value'), id='scenario-dropdown-lca', className='Dropdown-2'), # value=scenario_filenames[0].get('value'),
                   dcc.Dropdown(options=['TtW', 'WtW'], id='chose_lca', value='TtW', className='Dropdown-2'),
                   dcc.Dropdown(options=fig.selected_scenario.index.get_level_values(0).unique(), id='lca-vehicle-class', value='icev', className='Dropdown-2'),
                   dcc.Dropdown(options=fig.selected_scenario.index.get_level_values(1).unique(), id='lca-segment', value='Mini', className='Dropdown-2'),
                   dbc.Switch(label='Include recycling', value=True, id='recycling-option', className='recycling_toggle_switch'),
-                  dbc.Button(id='selection-button', n_clicks=0, children='apply selection', color='success', size='m', class_name='m-3 selection-button'),
+                  dbc.Button(id='selection-button', n_clicks=0, children='Apply selection', color='success', size='m', class_name='m-3 selection-button'),
                   dcc.Graph(id='lca-waterfall-fig', figure=fig.get_fig_lca_waterfall(scenario_filenames[0].get('value'), chosen_lca='ttw', chosen_vehicle_class='icev', chosen_segment='Mini', is_recycling_displayed=True))
               ]
             ),
@@ -374,7 +439,6 @@ app.layout = dbc.Container([
         ])
     ])
 ])
-
 
 
 if __name__ == '__main__':

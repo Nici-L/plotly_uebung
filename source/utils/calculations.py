@@ -459,3 +459,13 @@ def calc_quadratic_regression(x, y, x_new):
     return y_new
 
 
+def get_unique_values_from_dict(data, key_of_interest, condition_dict=None):
+    unique_values = set()
+
+    for obj in data:
+        if key_of_interest in obj:
+            if condition_dict is None or all(obj.get(key, None) == value for key, value in condition_dict.items()):
+                unique_values.add(obj[key_of_interest])
+
+    return list(unique_values)
+
