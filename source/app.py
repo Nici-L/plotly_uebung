@@ -24,6 +24,7 @@ from source.components.Tab_1 import callbacks as tab1_callbacks
 # todo: Erklärungen/Quellen/Beschreibungen ergänzen
 # todo: Grafiken alignen
 # todo: comparison figure überarbeiten
+# todo: achsenbeschirftung mit milliarden eventuell anders darstellen
 
 
 

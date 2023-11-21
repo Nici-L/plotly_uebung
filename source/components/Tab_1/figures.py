@@ -264,29 +264,38 @@ def init_global_variables(selected_scenario_name: str = None, scenario_df: pd.Da
 init_global_variables(scenario_filenames[0].get('value'))
 
 
+# todo: zahlen über den bars anzeigen lassen
 def get_fig_sum_total_co2e(co2e_series, dataframe):
     y_icev_sum = co2e_series['icev'].sum()
     y_hev_sum = co2e_series['hev'].sum()
     y_phev_sum = co2e_series['phev'].sum()
     y_bev_sum = co2e_series['bev'].sum()
-    fig_sum_total_co2e = go.Figure(data=[
-        go.Bar(name='icev', x=['Co<sub>2e</sub> of <br> chosen scenario'], y=[y_icev_sum],  marker_color=clr.blue2_base, text=int((y_icev_sum + y_phev_sum + y_bev_sum + y_hev_sum)*(10**(-9)))),
-        go.Bar(name='hev', x=['Co<sub>2e</sub> of <br> chosen scenario'], y=[y_hev_sum], marker_color=clr.maygreen_base),
-        go.Bar(name='phev', x=['Co<sub>2e</sub> of <br> chosen scenario'], y=[y_phev_sum], marker_color=clr.purple_base),
-        go.Bar(name='bev', x=['Co<sub>2e</sub> of <br> chosen scenario'], y=[y_bev_sum], marker_color=clr.orange_base)
-    ],
-            layout={
-                'barmode': 'stack',
-                'plot_bgcolor': '#003F50',  # color Solar stylesheet
-                'paper_bgcolor': '#003F50',
-                'font_color': 'white'
-                }
-            )
+    y_vehicle_sum = y_hev_sum + y_bev_sum + y_phev_sum + y_icev_sum
+    vehicles_sum = {'icev_sum': int(y_icev_sum), 'hev_sum': int(y_hev_sum), 'phev_sum': int(y_phev_sum), 'bev_sum': int(y_bev_sum)}
+    df_vehicles_sum = pd.DataFrame(data=vehicles_sum, index=['co2e'])
+    print(df_vehicles_sum)
+    print(df_vehicles_sum['icev_sum']['co2e'])
+    fig_sum_total_co2e = go.Figure(
+        go.Bar(name='icev', x=['Co<sub>2e</sub> of <br> chosen scenario'], y=[df_vehicles_sum['icev_sum']['co2e']], marker_color=clr.blue2_base)
+    )
+    fig_sum_total_co2e.add_trace(
+        go.Bar(x=['Co<sub>2e</sub> of <br> chosen scenario'], y=[df_vehicles_sum['hev_sum']['co2e']], marker_color=clr.maygreen_base)
+    )
+    fig_sum_total_co2e.add_trace(
+       go.Bar(name='phev', x=['Co<sub>2e</sub> of <br> chosen scenario'], y=[df_vehicles_sum['phev_sum']['co2e']], marker_color=clr.purple_base)
+    )
+    fig_sum_total_co2e.add_trace(
+        go.Bar(name='bev', x=['Co<sub>2e</sub> of <br> chosen scenario'], y=[df_vehicles_sum['bev_sum']['co2e']], marker_color=clr.orange_base, text=int(y_vehicle_sum*(10 ** (-9))))
+    )
     fig_sum_total_co2e.update_yaxes(range=[0, 100000000000], autorange=False)
     fig_sum_total_co2e.update_layout(
         title=dict(text="Total CO<sub>2e</sub> emitted by passenger cars per year in kg"), # , font=dict(size=15, color="lightgray", family="verdana")
         margin=dict(l=20, r=20, t=80, b=20),
         yaxis_title="CO<sub>2e</sub> in mio t",
+        barmode="stack",
+        plot_bgcolor='#002b36',  # color Solar stylesheet
+        paper_bgcolor='#002b36',
+        font_color='white',
     )
     emission_target_2030 = dataframe['emission_target_de_30'].iloc[0]
     fig_sum_total_co2e.add_trace(
@@ -304,12 +313,12 @@ def get_fig_sum_total_co2e(co2e_series, dataframe):
             x=['Co<sub>2e</sub> target <br> Germany 2040'],
             y=[emission_target_2040],
             marker_color=clr.maygreen_base,
-            name='target 2030',
+            name='target 2040',
             text=int(emission_target_2040 * (10 ** (-9)))
         )
      )
-    fig_sum_total_co2e.update_traces(width=0.4)
-    # fig_sum_total_co2e.add_annotation(x=['co2e 2022'], y=[y_icev_sum], text="mio t", showarrow=True)
+    fig_sum_total_co2e.update_traces(width=0.4, textposition='outside')
+    # fig_sum_total_co2e.add_annotation(x=['Co<sub>2e</sub> of <br> chosen scenario'], y=[y_icev_sum], text="mio t", showarrow=True)
     return fig_sum_total_co2e
 
 
