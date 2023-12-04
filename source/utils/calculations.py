@@ -19,6 +19,7 @@ def calculate_yearly_consumption_liter(df_data: pd.DataFrame):
         """
     consumption_manufacturer_liter_per_km = df_data['consumption_manufacturer_l']/100
     consumption_manufacturer_liter_per_year = consumption_manufacturer_liter_per_km * df_data['mileage']
+    # print(f"{consumption_manufacturer_liter_per_year}")
     return consumption_manufacturer_liter_per_year
 
 
@@ -229,7 +230,7 @@ def get_co2e_usage_ttw_per_segment(series_with_calculated_co2e, dataframe_with_v
     calculated_co2e_per_segment_series = pd.Series(index=dataframe_with_vehicle_stock.index)
     for ind in dataframe_with_vehicle_stock.index:
         row = dataframe_with_vehicle_stock.loc[ind]
-        calculated_co2e_per_segment = series_with_calculated_co2e[ind] * row['vehicle_stock']
+        calculated_co2e_per_segment = series_with_calculated_co2e[ind] * row['number_of_cars_in_segment']
         calculated_co2e_per_segment_series[ind] = calculated_co2e_per_segment
     return calculated_co2e_per_segment_series
 
@@ -341,7 +342,7 @@ def get_co2e_usage_wtw_per_segment(series_with_calculated_co2e, dataframe_with_v
     calculated_co2e_per_segment_series = pd.Series(index=dataframe_with_vehicle_stock.index)
     for ind in dataframe_with_vehicle_stock.index:
         row = dataframe_with_vehicle_stock.loc[ind]
-        calculated_co2e_per_segment = series_with_calculated_co2e[ind] * row['vehicle_stock']
+        calculated_co2e_per_segment = series_with_calculated_co2e[ind] * row['number_of_cars_in_segment']
         calculated_co2e_per_segment_series[ind] = calculated_co2e_per_segment
     return calculated_co2e_per_segment_series
 
@@ -378,7 +379,7 @@ def calculate_production_co2e_per_vehicle_class(series_production_co2e_per_car, 
     production_co2e_per_segment_series = pd.Series(index=dataframe.index)
     for ind in dataframe.index:
         row = dataframe.loc[ind]
-        production_co2e_per_segment = series_production_co2e_per_car[ind] * row['vehicle_stock']
+        production_co2e_per_segment = series_production_co2e_per_car[ind] * row['number_of_cars_in_segment']
         production_co2e_per_segment_series[ind] = production_co2e_per_segment
     calculated_co2e_production_per_vehicle_class_icev = production_co2e_per_segment_series.loc['icev'].sum()
     calculated_co2e_production_per_vehicle_class_hev = production_co2e_per_segment_series.loc['hev'].sum()
@@ -446,11 +447,6 @@ def calc_quadratic_regression(x, y, x_new):
 
     # polynom approximation
     [a, b, c] = numpy.polyfit(x=x, y=y, deg=2)
-
-    # print(f"a: {a}, b: {b}, c: {c}")
-    # print(f"x : {x}")
-    # print(f"y : {y}")
-    # print(f"x_new : {x_new}")
     y_new = a * x_new[:] ** 2 + b * x_new[:] + c
     plt.plot(x_new, y_new)
     # plt.show()
@@ -466,6 +462,5 @@ def get_unique_values_from_dict(data, key_of_interest, condition_dict=None):
         if key_of_interest in obj:
             if condition_dict is None or all(obj.get(key, None) == value for key, value in condition_dict.items()):
                 unique_values.add(obj[key_of_interest])
-
-    return list(unique_values)
+    return sorted(list(unique_values))
 

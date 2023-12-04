@@ -13,18 +13,15 @@ import utils.colors_KIT_plotly as clr
 from init_app import app
 import source.components.Tab_1.figures as fig
 from source.components.Tab_1 import callbacks as tab1_callbacks
+import plotly.io as pio
 
-# todo: parameter callback zu methode
-# todo: dropdown ändern zu zweifach Auswahl --> Agora und im nächsten schritt die Jahreszahl
-# dictionary mit Modellname und Jahr ergänzen
-# values aus csv nehmen
-# muss es nochmal neu dafür in for loop eingelesen werden?
+
 #
 # todo: Farbe allowed co2 budget
 # todo: Erklärungen/Quellen/Beschreibungen ergänzen
 # todo: Grafiken alignen
 # todo: comparison figure überarbeiten
-# todo: achsenbeschirftung mit milliarden eventuell anders darstellen
+# todo: achsenbeschriftung mit milliarden eventuell anders darstellen
 
 
 
@@ -49,8 +46,19 @@ for file in os.listdir(config.SCENARIO_FOLDER_PATH):
             'modelname': model_name,
         })
 print(f"scenario_filenames: {scenario_filenames}")
+print(f"app.py:{os.listdir(config.SCENARIO_FOLDER_PATH)}")
 
+default_modelname = calc.get_unique_values_from_dict(data=scenario_filenames, key_of_interest='modelname')[0]
+print(f"dafault_name:{default_modelname}")
+default_year = calc.get_unique_values_from_dict(data=scenario_filenames, key_of_interest='year', condition_dict={'modelname': default_modelname})[0]
+print(f"dafault_year:{default_year}")
+default_scenario_filename = calc.get_unique_values_from_dict(data=scenario_filenames, key_of_interest='value', condition_dict={'modelname': default_modelname, 'year': default_year})[0]
+print(f"dafault_filename:{default_scenario_filename}")
+fig.init_global_variables(default_scenario_filename)
 
+pio.kaleido.scope.default_format = "pdf"
+if not os.path.exists("images"):
+    os.mkdir("images")
 
 
 # use this in case the csv data has a lot of whitespaces
@@ -69,12 +77,12 @@ app.layout = dbc.Container([
                 dcc.Dropdown(
                     options=calc.get_unique_values_from_dict(data=scenario_filenames, key_of_interest='modelname'),
                     id='scenario-dropdown',
-                    value=calc.get_unique_values_from_dict(data=scenario_filenames, key_of_interest='modelname')[0],
+                    value=default_modelname,
                     className='Dropdown-2'),
                 dbc.Label("Choose a year"),
                 dbc.RadioItems(
                     options=calc.get_unique_values_from_dict(data=scenario_filenames, key_of_interest='year', condition_dict={'modelname': calc.get_unique_values_from_dict(data=scenario_filenames, key_of_interest='modelname')[0]}),
-                    value=calc.get_unique_values_from_dict(data=scenario_filenames, key_of_interest='year', condition_dict={'modelname': calc.get_unique_values_from_dict(data=scenario_filenames, key_of_interest='modelname')[0]})[0],
+                    value=default_year,
                     id="radioitems-input",
                 )
             ]),
@@ -288,7 +296,7 @@ app.layout = dbc.Container([
                         id="collapse",
                         is_open=False,
                     ),
-                ], className='collapse-div1 mr-3'
+                ], className='collapse-div1 m-3'
             )
         ]
         ),
@@ -296,7 +304,7 @@ app.layout = dbc.Container([
             html.Div(
                 children=[
                     dbc.Label("Select a segment and calculation"),
-                    # dbc.Alert("In case of small numbers hover over the graph!", color="danger", dismissable=True, className='small-number-warning'),
+                    dbc.Alert("The vehicle class PHEV does not have a segment Mini!", color="danger", dismissable=True, className='small-number-warning'),
                     dcc.Dropdown(options=fig.selected_scenario.index.get_level_values(1).unique(), id='choose-segments', value='Mini', searchable=False, className='Dropdown-2'),
                     dcc.Dropdown(options=['one car', 'all vehicles'], id='one_car_dropdown', value='all vehicles', className='Dropdown-2'),
                     dcc.Dropdown(options=['TtW', 'WtW'], id='TtW_vehicle_class_fig', value='TtW', className='Dropdown-2'),
@@ -323,7 +331,7 @@ app.layout = dbc.Container([
                         id="collapse 2",
                         is_open=False,
                     ),
-                ], className='collapse-div1 mr-3'
+                ], className='collapse-div1 m-3'
             )
         ]),
     ]),
@@ -352,7 +360,7 @@ app.layout = dbc.Container([
                                     id="collapse 3",
                                     is_open=False,
                                 ),
-                            ], className='collapse-div1 mr-3'
+                            ], className='collapse-div1 m-3'
                         )
                     ]
                 )
@@ -367,7 +375,7 @@ app.layout = dbc.Container([
             html.Div(
                 children=[
                     dbc.Label('Choose the scenarios'),
-                    dcc.Dropdown(options=[{key: scenario_dict[key] for key in ['value', 'label']} for scenario_dict in scenario_filenames], id='scenario-dropdown-comparison', multi=True, className='Dropdown-2'), # value=scenario_filenames[0].get('value'),
+                    dcc.Dropdown(options=[{key: scenario_dict[key] for key in ['value', 'label']} for scenario_dict in scenario_filenames], id='scenario-dropdown-comparison', multi=True, className='Dropdown-2'),
                     dcc.Dropdown(options=['TtW', 'WtW'], id='chose_lca_comparison_fig', className='Dropdown-2'),
                     dbc.Switch(label='Show production and recycling per car', value=True, id='details-toggle-option', className='recycling_toggle_switch'),
                     dbc.Button(id='selection-button-scenario-comparison', n_clicks=0, children='Apply selection', color='success', size='m', class_name='m-3 selection-button'),
@@ -389,20 +397,20 @@ app.layout = dbc.Container([
                         id="collapse 4",
                         is_open=False,
                     ),
-                ], className='collapse-div1 mr-3'
+                ], className='collapse-div1 m-3'
             )
         ]),
         dbc.Col([
             html.Div(
               children=[
                   dbc.Label('Select the car you want to see a detailed LCA of'),
-                  dcc.Dropdown(options=[{key: scenario_dict[key] for key in ['value', 'label']} for scenario_dict in scenario_filenames], value=scenario_filenames[0].get('value'), id='scenario-dropdown-lca', className='Dropdown-2'), # value=scenario_filenames[0].get('value'),
+                  dcc.Dropdown(options=[{key: scenario_dict[key] for key in ['value', 'label']} for scenario_dict in scenario_filenames], value=default_scenario_filename, id='scenario-dropdown-lca', className='Dropdown-2'),
                   dcc.Dropdown(options=['TtW', 'WtW'], id='chose_lca', value='TtW', className='Dropdown-2'),
                   dcc.Dropdown(options=fig.selected_scenario.index.get_level_values(0).unique(), id='lca-vehicle-class', value='icev', className='Dropdown-2'),
                   dcc.Dropdown(options=fig.selected_scenario.index.get_level_values(1).unique(), id='lca-segment', value='Mini', className='Dropdown-2'),
                   dbc.Switch(label='Include recycling', value=True, id='recycling-option', className='recycling_toggle_switch'),
                   dbc.Button(id='selection-button', n_clicks=0, children='Apply selection', color='success', size='m', class_name='m-3 selection-button'),
-                  dcc.Graph(id='lca-waterfall-fig', figure=fig.get_fig_lca_waterfall(scenario_filenames[0].get('value'), chosen_lca='ttw', chosen_vehicle_class='icev', chosen_segment='Mini', is_recycling_displayed=True))
+                  dcc.Graph(id='lca-waterfall-fig', figure=fig.get_fig_lca_waterfall(default_scenario_filename, chosen_lca='ttw', chosen_vehicle_class='icev', chosen_segment='Mini', is_recycling_displayed=True))
               ]
             ),
             html.Div(
@@ -420,7 +428,7 @@ app.layout = dbc.Container([
                         id="collapse 5",
                         is_open=False,
                     ),
-                ], className='collapse-div1 mr-3'
+                ], className='collapse-div1 m-3'
             )
         ])
     ]),
@@ -430,13 +438,16 @@ app.layout = dbc.Container([
                 dcc.Dropdown(options=['TtW', 'WtW'], id='chose_lca_scatter_plot', value='TtW', className='Dropdown-2'),
                 dcc.Dropdown(options=fig.selected_scenario.index.get_level_values(1).unique(), id='lca-segment-production-comparison', value='Mittelklasse', className='Dropdown-2'),
                 dcc.Dropdown(options=['per year', 'per km'], id='chose_km_or_year', value='per year', className='Dropdown-2'),
+                dbc.Button(id='selection-button-vehicle-class-comparison', n_clicks=0, children='Apply selection', color='success', size='m', class_name='m-3 selection-button'),
                 dcc.Graph(id='fig_production_comparison', figure=fig.get_fig_production_comparison_per_year(co2_per_car=fig.co2e_ttw_per_car, segment='Mittelklasse'))
-            ], className='mr-3')
+            ], className='m-3')
         ])
     ]),
     dbc.Row([
         dbc.Col([
-            dcc.Graph(id='co2e_over_the_years_fig', figure=fig.get_yearly_co2_fig())
+            html.Div([
+                dcc.Graph(id='co2e_over_the_years_fig', figure=fig.get_yearly_co2_fig())
+                ], className='m-3'),
         ])
     ])
 ])
