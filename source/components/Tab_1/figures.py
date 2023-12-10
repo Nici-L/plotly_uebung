@@ -564,10 +564,10 @@ def get_yearly_co2_fig():
                     104000000000, 104000000000, 107440000000, 108000000000, 109000000000, 111000000000, 113000000000,
                     110000000000]
     x = numpy.array([2019, 2030, 2045])
-    y = numpy.array([111520000000, selected_scenario['emission_target_de_30'].iloc[0], selected_scenario['emission_target_de_45'].iloc[0]])
+    y = numpy.array([111520000000, selected_scenario['path_emission_2030'].iloc[0], selected_scenario['path_emission_2045'].iloc[0]])
     x_new = numpy.arange(2019, 2050, 1)
     x_array_combined = numpy.concatenate((x_since_1990, x_new))
-    yearly_co2e_regression = calc.calc_quadratic_regression(x=x, y=y, x_new=x_new)
+    yearly_co2e_regression = [max(0, reg_val) for reg_val in calc.calc_quadratic_regression(x=x, y=y, x_new=x_new)]
     y_array_combined = numpy.concatenate((y_since_1990, yearly_co2e_regression))
     yearly_co2e_fig = go.Figure(data=go.Bar(
         x=x_array_combined,

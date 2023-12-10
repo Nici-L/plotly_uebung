@@ -103,7 +103,7 @@ app.layout = dbc.Container([
                     dbc.Row([
                         dbc.Col([
                             html.Div('share of E5', id='share_E5_totalgasoline_button'), # , style={"font-weight": "bold"}
-                            dcc.Input(id="share_E5", type="number", placeholder="share E5", className='input-field'),
+                            dcc.Input(id="share_E5", type="number", placeholder="share E5"),
                             dbc.Badge("%", color="dark", text_color="primary", className="ms-1"),
                         ]),
                         dbc.Col([

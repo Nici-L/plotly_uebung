@@ -152,7 +152,7 @@ def get_co2e_usage_ttw_per_car_per_km(dataframe_consumption_per_km_liter_with_en
     for ind in dataframe_with_co2e_values.index:
         row = dataframe_with_co2e_values.loc[ind]
         if row['energysupply'] == 'gasoline':
-            calculated_co2e = dataframe_consumption_per_km_liter_with_energy_supply['consumption_manufacturer_l'][ind] * (row['share_E5_totalgasoline'] * row['co2e_E5_TtW'] + row['share_E10_totalgasoline'] * row['co2e_E10_TtW']+ row['share_bioliq_totalgasoline'] * row['co2e_bioliq_TtW']+ row['share_ptl_totalgasoline'] * row['co2e_ptl_TtW'])
+            calculated_co2e = dataframe_consumption_per_km_liter_with_energy_supply['consumption_manufacturer_l'][ind] * (row['share_E5_totalgasoline'] * row['co2e_E5_TtW'] + row['share_E10_totalgasoline'] * row['co2e_E10_TtW'] + row['share_superplus_totalgasoline'] * row['co2e_superplus_TtW'] + row['share_bioliq_totalgasoline'] * row['co2e_bioliq_TtW']+ row['share_ptl_totalgasoline'] * row['co2e_ptl_TtW'])
         elif row['energysupply'] == 'diesel':
             calculated_co2e = dataframe_consumption_per_km_liter_with_energy_supply['consumption_manufacturer_l'][ind] * (row['share_D7_totaldiesel'] * row['co2e_D7_TtW'] + row['share_hvo_totaldiesel'] * row['co2e_hvo_TtW'])
         elif row['energysupply'] == 'battery':
@@ -191,7 +191,7 @@ def get_co2e_usage_ttw_per_car(dataframe_consumption_per_year_liter_with_energy_
     for ind in dataframe_with_co2e_values.index:
         row = dataframe_with_co2e_values.loc[ind]
         if row['energysupply'] == 'gasoline':
-            calculated_co2e = dataframe_consumption_per_year_liter_with_energy_supply['consumption_manufacturer_l'][ind] * (row['share_E5_totalgasoline'] * row['co2e_E5_TtW'] + row['share_E10_totalgasoline'] * row['co2e_E10_TtW']+ row['share_bioliq_totalgasoline'] * row['co2e_bioliq_TtW']+ row['share_ptl_totalgasoline'] * row['co2e_ptl_TtW'])
+            calculated_co2e = dataframe_consumption_per_year_liter_with_energy_supply['consumption_manufacturer_l'][ind] * (row['share_E5_totalgasoline'] * row['co2e_E5_TtW'] + row['share_E10_totalgasoline'] * row['co2e_E10_TtW']+ row['share_superplus_totalgasoline'] * row['co2e_superplus_TtW']+ row['share_bioliq_totalgasoline'] * row['co2e_bioliq_TtW']+ row['share_ptl_totalgasoline'] * row['co2e_ptl_TtW'])
         elif row['energysupply'] == 'diesel':
             calculated_co2e = dataframe_consumption_per_year_liter_with_energy_supply['consumption_manufacturer_l'][ind] * (row['share_D7_totaldiesel'] * row['co2e_D7_TtW'] + row['share_hvo_totaldiesel'] * row['co2e_hvo_TtW'])
         elif row['energysupply'] == 'battery':
@@ -263,7 +263,7 @@ def get_co2e_usage_wtw_per_car_per_km(dataframe_consumption_per_km_liter_with_en
     for ind in dataframe_with_co2e_values.index:
         row = dataframe_with_co2e_values.loc[ind]
         if row['energysupply'] == 'gasoline':
-            calculated_co2e = dataframe_consumption_per_km_liter_with_energy_supply['consumption_manufacturer_l'][ind] * (row['share_E5_totalgasoline'] * row['co2e_E5_WtW'] + row['share_E10_totalgasoline'] * row['co2e_E10_WtW'] + row['share_bioliq_totalgasoline'] * row['co2e_bioliq_WtW']+ row['share_ptl_totalgasoline'] * row['co2e_ptl_WtW'])
+            calculated_co2e = dataframe_consumption_per_km_liter_with_energy_supply['consumption_manufacturer_l'][ind] * (row['share_E5_totalgasoline'] * row['co2e_E5_WtW'] + row['share_E10_totalgasoline'] * row['co2e_E10_WtW'] + row['share_superplus_totalgasoline'] * row['co2e_superplus_WtW'] + row['share_bioliq_totalgasoline'] * row['co2e_bioliq_WtW']+ row['share_ptl_totalgasoline'] * row['co2e_ptl_WtW'])
         elif row['energysupply'] == 'diesel':
             calculated_co2e = dataframe_consumption_per_km_liter_with_energy_supply['consumption_manufacturer_l'][ind] * (row['share_D7_totaldiesel'] * row['co2e_D7_WtW'] + row['share_hvo_totaldiesel'] * row['co2e_hvo_WtW'])
         elif row['energysupply'] == 'battery':
@@ -304,7 +304,7 @@ def get_co2e_usage_wtw_per_car(dataframe_consumption_per_year_liter_with_energy_
     for ind in dataframe_with_co2e_values.index:
         row = dataframe_with_co2e_values.loc[ind]
         if row['energysupply'] == 'gasoline':
-            calculated_co2e = dataframe_consumption_per_year_liter_with_energy_supply['consumption_manufacturer_l'][ind] * (row['share_E5_totalgasoline'] * row['co2e_E5_WtW'] + row['share_E10_totalgasoline'] * row['co2e_E10_WtW'] + row['share_bioliq_totalgasoline'] * row['co2e_bioliq_WtW']+ row['share_ptl_totalgasoline'] * row['co2e_ptl_WtW'])
+            calculated_co2e = dataframe_consumption_per_year_liter_with_energy_supply['consumption_manufacturer_l'][ind] * (row['share_E5_totalgasoline'] * row['co2e_E5_WtW'] + row['share_E10_totalgasoline'] * row['co2e_E10_WtW'] + row['share_superplus_totalgasoline'] * row['co2e_superplus_WtW'] + row['share_bioliq_totalgasoline'] * row['co2e_bioliq_WtW']+ row['share_ptl_totalgasoline'] * row['co2e_ptl_WtW'])
         elif row['energysupply'] == 'diesel':
             calculated_co2e = dataframe_consumption_per_year_liter_with_energy_supply['consumption_manufacturer_l'][ind] * (row['share_D7_totaldiesel'] * row['co2e_D7_WtW'] + row['share_hvo_totaldiesel'] * row['co2e_hvo_WtW'])
         elif row['energysupply'] == 'battery':
@@ -446,8 +446,9 @@ def calc_quadratic_regression(x, y, x_new):
     # plt.show()
 
     # polynom approximation
-    [a, b, c] = numpy.polyfit(x=x, y=y, deg=2)
-    y_new = a * x_new[:] ** 2 + b * x_new[:] + c
+    [a, b] = numpy.polyfit(x=x, y=y, deg=1)
+    # y_new = a * x_new[:] ** 2 + b * x_new[:] + c
+    y_new = a * x_new[:] + b
     plt.plot(x_new, y_new)
     # plt.show()
     # polynom approximation
