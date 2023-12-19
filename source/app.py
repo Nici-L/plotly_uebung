@@ -342,9 +342,9 @@ app.layout = dbc.Container([
                     children=[
                         dbc.Label("Select a vehicle class and segment"),
                         dcc.Dropdown(options=['kWh', 'liter'], id='kWh-or-liter', value='liter', className='Dropdown-2'),
-                        dcc.Dropdown(options=fig.selected_scenario.index.get_level_values(0).unique(), id='consumption-vehicle-class', multi=True, value=['icev'], className='Dropdown-2'),
+                        dcc.Dropdown(options=fig.selected_scenario.index.get_level_values(0).unique(), id='consumption-vehicle-class', multi=True, value=['ICEV'], className='Dropdown-2'),
                         dcc.Dropdown(options=fig.selected_scenario.index.get_level_values(1).unique(), id='consumption-segment', multi=True, value=['Mini', 'Kleinwagen'], className='Dropdown-2'),
-                        dcc.Graph(id='fig-consumption', figure=fig.get_fig_consumption(fig.selected_scenario, ['Mini', 'Kleinwagen'], 'icev')),
+                        dcc.Graph(id='fig-consumption', figure=fig.get_fig_consumption(fig.selected_scenario, ['Mini', 'Kleinwagen'], 'ICEV')),
                         html.Div(
                             [
                                 dbc.Button(
@@ -406,11 +406,11 @@ app.layout = dbc.Container([
                   dbc.Label('Select the car you want to see a detailed LCA of'),
                   dcc.Dropdown(options=[{key: scenario_dict[key] for key in ['value', 'label']} for scenario_dict in scenario_filenames], value=default_scenario_filename, id='scenario-dropdown-lca', className='Dropdown-2'),
                   dcc.Dropdown(options=['TtW', 'WtW'], id='chose_lca', value='TtW', className='Dropdown-2'),
-                  dcc.Dropdown(options=fig.selected_scenario.index.get_level_values(0).unique(), id='lca-vehicle-class', value='icev', className='Dropdown-2'),
+                  dcc.Dropdown(options=fig.selected_scenario.index.get_level_values(0).unique(), id='lca-vehicle-class', value='ICEV', className='Dropdown-2'),
                   dcc.Dropdown(options=fig.selected_scenario.index.get_level_values(1).unique(), id='lca-segment', value='Mini', className='Dropdown-2'),
                   dbc.Switch(label='Include recycling', value=True, id='recycling-option', className='recycling_toggle_switch'),
                   dbc.Button(id='selection-button', n_clicks=0, children='Apply selection', color='success', size='m', class_name='m-3 selection-button'),
-                  dcc.Graph(id='lca-waterfall-fig', figure=fig.get_fig_lca_waterfall(default_scenario_filename, chosen_lca='ttw', chosen_vehicle_class='icev', chosen_segment='Mini', is_recycling_displayed=True))
+                  dcc.Graph(id='lca-waterfall-fig', figure=fig.get_fig_lca_waterfall(default_scenario_filename, chosen_lca='ttw', chosen_vehicle_class='ICEV', chosen_segment='Mini', is_recycling_displayed=True))
               ]
             ),
             html.Div(

@@ -376,20 +376,37 @@ def calculate_production_co2e_per_car(dataframe):
 
 
 def calculate_production_co2e_per_vehicle_class(series_production_co2e_per_car, dataframe):
+    """
+       Calculate the total CO2 production emissions per vehicle class.
+
+       This function takes a series of production CO2 emissions per car and a dataframe containing information about
+       the number of cars in each vehicle segment. It calculates the total CO2 production emissions for each vehicle
+       class (ICEV, HEV, PHEV, BEV) by multiplying the emissions per car with the respective number of cars in each segment.
+
+       :param pd.Series series_production_co2e_per_car:
+           A Pandas Series containing production CO2 emissions per car, with the index representing vehicle segments.
+
+       :param pd.DataFrame dataframe:
+           A Pandas DataFrame containing information about the number of cars in each vehicle segment.
+
+       :return: pd.Series
+           A Pandas Series containing the total production CO2 emissions for each vehicle class (ICEV, HEV, PHEV, BEV).
+           The series is indexed by vehicle class.
+       """
     production_co2e_per_segment_series = pd.Series(index=dataframe.index)
     for ind in dataframe.index:
         row = dataframe.loc[ind]
         production_co2e_per_segment = series_production_co2e_per_car[ind] * row['number_of_cars_in_segment']
         production_co2e_per_segment_series[ind] = production_co2e_per_segment
-    calculated_co2e_production_per_vehicle_class_icev = production_co2e_per_segment_series.loc['icev'].sum()
-    calculated_co2e_production_per_vehicle_class_hev = production_co2e_per_segment_series.loc['hev'].sum()
-    calculated_co2e_production_per_vehicle_class_phev = production_co2e_per_segment_series.loc['phev'].sum()
-    calculated_co2e_production_per_vehicle_class_bev = production_co2e_per_segment_series.loc['bev'].sum()
-    data = {'icev': calculated_co2e_production_per_vehicle_class_icev,
-            'hev': calculated_co2e_production_per_vehicle_class_hev,
-            'phev': calculated_co2e_production_per_vehicle_class_phev,
-            'bev': calculated_co2e_production_per_vehicle_class_bev}
-    calculated_co2e_production_per_vehicle_class_all_series = pd.Series(data=data, index=['icev', 'hev', 'phev', 'bev'])
+    calculated_co2e_production_per_vehicle_class_icev = production_co2e_per_segment_series.loc['ICEV'].sum()
+    calculated_co2e_production_per_vehicle_class_hev = production_co2e_per_segment_series.loc['HEV'].sum()
+    calculated_co2e_production_per_vehicle_class_phev = production_co2e_per_segment_series.loc['PHEV'].sum()
+    calculated_co2e_production_per_vehicle_class_bev = production_co2e_per_segment_series.loc['BEV'].sum()
+    data = {'ICEV': calculated_co2e_production_per_vehicle_class_icev,
+            'HEV': calculated_co2e_production_per_vehicle_class_hev,
+            'PHEV': calculated_co2e_production_per_vehicle_class_phev,
+            'BEV': calculated_co2e_production_per_vehicle_class_bev}
+    calculated_co2e_production_per_vehicle_class_all_series = pd.Series(data=data, index=['ICEV', 'HEV', 'PHEV', 'BEV'])
     return calculated_co2e_production_per_vehicle_class_all_series
 
 
@@ -457,6 +474,25 @@ def calc_quadratic_regression(x, y, x_new):
 
 
 def get_unique_values_from_dict(data, key_of_interest, condition_dict=None):
+    """
+       Get unique values from a list of dictionaries based on a specified key.
+
+       This function iterates through a list of dictionaries and extracts unique values from a specified key.
+       Optionally, a condition can be provided as a dictionary to filter the objects based on key-value pairs.
+
+       :param List[Dict[str, Any]] data:
+           A list of dictionaries.
+
+       :param str key_of_interest:
+           The key for which unique values will be extracted.
+
+       :param Optional[Dict[str, Any]] condition_dict:
+           An optional dictionary representing key-value pairs for filtering the objects. If provided,
+           only objects that satisfy all conditions will be considered.
+
+       :return: List[Any]
+           A sorted list of unique values extracted from the specified key in the dictionaries.
+       """
     unique_values = set()
 
     for obj in data:

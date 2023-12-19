@@ -52,11 +52,11 @@ unique_dict_values: list
 # color solar stylesheet: #002b36
 map_colors = {
     ## Vehicles
-    "bev": clr.orange_base,
-    "hev": clr.maygreen_base,
-    "icev": clr.blue2_base,
+    "BEV": clr.orange_base,
+    "HEV": clr.maygreen_base,
+    "ICEV": clr.blue2_base,
     "ICEV-g": clr.green1_base,
-    "phev": clr.purple_base,
+    "PHEV": clr.purple_base,
     ## Life cycle phases
     "production": clr.blue2_base,
     "usage": clr.green1_base,
@@ -273,28 +273,42 @@ def init_global_variables(selected_scenario_name: str = None, scenario_df: pd.Da
 
 
 def get_fig_sum_total_co2e(co2e_ttw_series, selected_scenario_df):
-    # print(f"dataframe der Grafik:{selected_scenario_df}")
-    # print(f"co2e ttw series der grafik:{co2e_ttw_series}")
-    y_icev_sum = co2e_ttw_series['icev'].sum()
-    y_hev_sum = co2e_ttw_series['hev'].sum()
-    y_phev_sum = co2e_ttw_series['phev'].sum()
-    y_bev_sum = co2e_ttw_series['bev'].sum()
+    """
+        Create a Plotly figure representing the total CO2 emissions for different vehicle classes.
+
+        This function takes a series of CO2 emissions per vehicle class and a DataFrame containing information about
+        emission targets for specific years. It generates a Plotly bar chart visualizing the total CO2 emissions for
+        ICEV, HEV, PHEV, and BEV, along with emission targets for 2030 and 2040.
+
+        :param Dict[str, Any] co2e_ttw_series:
+            A dictionary containing CO2 emissions per vehicle class.
+
+        :param pd.DataFrame selected_scenario_df:
+            A Pandas DataFrame containing information about emission targets for specific years.
+
+        :return: go.Figure
+            A Plotly figure representing the total CO2 emissions for different vehicle classes and emission targets.
+        """
+    y_icev_sum = co2e_ttw_series['ICEV'].sum()
+    y_hev_sum = co2e_ttw_series['HEV'].sum()
+    y_phev_sum = co2e_ttw_series['PHEV'].sum()
+    y_bev_sum = co2e_ttw_series['BEV'].sum()
     y_vehicle_sum = y_hev_sum + y_bev_sum + y_phev_sum + y_icev_sum
     vehicles_sum = {'icev_sum': int(y_icev_sum), 'hev_sum': int(y_hev_sum), 'phev_sum': int(y_phev_sum), 'bev_sum': int(y_bev_sum)}
     df_vehicles_sum = pd.DataFrame(data=vehicles_sum, index=['co2e'])
     # print(df_vehicles_sum)
     # print(df_vehicles_sum['icev_sum']['co2e'])
     fig_sum_total_co2e = go.Figure(
-        go.Bar(name='icev', x=['Co<sub>2e</sub> of <br> chosen scenario'], y=[df_vehicles_sum['icev_sum']['co2e']], marker_color=clr.blue2_base)
+        go.Bar(name='ICEV', x=['Co<sub>2e</sub> of <br> chosen scenario'], y=[df_vehicles_sum['icev_sum']['co2e']], marker_color=clr.blue2_base)
     )
     fig_sum_total_co2e.add_trace(
-        go.Bar(name='hev', x=['Co<sub>2e</sub> of <br> chosen scenario'], y=[df_vehicles_sum['hev_sum']['co2e']], marker_color=clr.maygreen_base)
+        go.Bar(name='HEV', x=['Co<sub>2e</sub> of <br> chosen scenario'], y=[df_vehicles_sum['hev_sum']['co2e']], marker_color=clr.maygreen_base)
     )
     fig_sum_total_co2e.add_trace(
-       go.Bar(name='phev', x=['Co<sub>2e</sub> of <br> chosen scenario'], y=[df_vehicles_sum['phev_sum']['co2e']], marker_color=clr.purple_base)
+       go.Bar(name='PHEV', x=['Co<sub>2e</sub> of <br> chosen scenario'], y=[df_vehicles_sum['phev_sum']['co2e']], marker_color=clr.purple_base)
     )
     fig_sum_total_co2e.add_trace(
-        go.Bar(name='bev', x=['Co<sub>2e</sub> of <br> chosen scenario'],
+        go.Bar(name='BEV', x=['Co<sub>2e</sub> of <br> chosen scenario'],
                y=[df_vehicles_sum['bev_sum']['co2e']],
                marker_color=clr.orange_base,
                text=['{:.1f}B'.format(int(y_vehicle_sum) / 1000000000)]
@@ -337,6 +351,24 @@ def get_fig_sum_total_co2e(co2e_ttw_series, selected_scenario_df):
 
 
 def get_fig_co2e_segment_all_vehicle_classes(co2e_dataframe, chosen_segment):
+    """
+        Create a Plotly figure representing CO2 emissions for all vehicle classes within a chosen segment.
+
+        This function takes a Pandas DataFrame containing CO2 emissions data, a chosen vehicle segment, and a color map.
+        It generates a Plotly bar chart visualizing the CO2 emissions for all vehicle classes within the selected segment.
+
+        :param pd.DataFrame co2e_dataframe:
+            A Pandas DataFrame containing CO2 emissions data.
+
+        :param str chosen_segment:
+            The selected vehicle segment for which CO2 emissions will be visualized.
+
+        :param Dict[str, Any] map_colors:
+            A dictionary representing the KIT color map for different vehicle classes.
+
+        :return: go.Figure
+            A Plotly figure representing CO2 emissions for all vehicle classes within the chosen segment.
+        """
     x_val = co2e_dataframe.loc[(slice(None), f"{chosen_segment}"), "co2e"]
     fig_co2e_segment_all_vehicle_classes = px.bar(x_val.to_frame('co2e'),
                                                   x=x_val.to_frame('co2e').index.get_level_values(0),
@@ -361,6 +393,28 @@ def get_fig_co2e_segment_all_vehicle_classes(co2e_dataframe, chosen_segment):
 
 
 def get_fig_consumption(co2e_dataframe, chosen_segments, chosen_vehicle_class):
+    """
+       Create a Plotly figure representing fuel consumption for a chosen vehicle class and segments.
+
+       This function takes a Pandas DataFrame containing fuel consumption data, a chosen vehicle class,
+       selected segments, and a color map. It generates a Plotly horizontal bar chart visualizing fuel consumption
+       for each segment within the selected vehicle class.
+
+       :param pd.DataFrame co2e_dataframe:
+           A Pandas DataFrame containing fuel consumption data.
+
+       :param str chosen_vehicle_class:
+           The selected vehicle class (by user) for which fuel consumption will be visualized.
+
+       :param List[str] chosen_segments:
+           The selected vehicle segments (by user) for which fuel consumption will be visualized.
+
+       :param Dict[str, Any] map_colors:
+           A dictionary representing the KIT color map for different vehicle segments.
+
+       :return: go.Figure
+           A Plotly figure representing fuel consumption for a chosen vehicle class and segments.
+       """
     consumption_segments = co2e_dataframe.loc[(chosen_vehicle_class, chosen_segments), "consumption_manufacturer_l"].to_frame('consumption')
     fig_consumption = px.bar(data_frame=consumption_segments,
                              y=consumption_segments.index.get_level_values(0),
@@ -387,6 +441,28 @@ def get_fig_consumption(co2e_dataframe, chosen_segments, chosen_vehicle_class):
 
 
 def get_fig_consumption_kwh(co2e_dataframe, chosen_segments, chosen_vehicle_class):
+    """
+           Create a Plotly figure representing electricity consumption for a chosen vehicle class and segments.
+
+           This function takes a Pandas DataFrame containing electricity consumption data, a chosen vehicle class,
+           selected segments, and a color map. It generates a Plotly horizontal bar chart visualizing electricity consumption
+           for each segment within the selected vehicle class.
+
+           :param pd.DataFrame co2e_dataframe:
+               A Pandas DataFrame containing electricity consumption data.
+
+           :param str chosen_vehicle_class:
+               The selected vehicle class (by user) for which fuel consumption will be visualized.
+
+           :param List[str] chosen_segments:
+               The selected vehicle segments (by user) for which fuel consumption will be visualized.
+
+           :param Dict[str, Any] map_colors:
+               A dictionary representing the KIT color map for different vehicle segments.
+
+           :return: go.Figure
+               A Plotly figure representing electricity consumption for a chosen vehicle class and segments.
+           """
     consumption_segments = co2e_dataframe.loc[(chosen_vehicle_class, chosen_segments), "consumption_manufacturer_kWh"].to_frame('consumption')
     fig_consumption_kwh = px.bar(data_frame=consumption_segments, y=consumption_segments.index.get_level_values(0), x='consumption', orientation='h', barmode='group', color=consumption_segments.index.get_level_values(1), color_discrete_map=map_colors, text_auto='.2s')
     fig_consumption_kwh.update_layout(
@@ -403,26 +479,45 @@ def get_fig_consumption_kwh(co2e_dataframe, chosen_segments, chosen_vehicle_clas
 
 
 def get_fig_production_comparison_per_year(co2_per_car, segment):
+    """
+       Create a Plotly figure representing the accumulated CO2 emissions of different powertrains per year.
+
+       This function takes two Pandas DataFrames containing CO2 emissions data for different powertrains and their
+       corresponding production CO2 emissions for one car. It generates a Plotly scatter plot visualizing the accumulated
+       CO2 emissions for ICEV, HEV, PHEV, and BEV over a range of years.
+
+       :param pd.DataFrame co2_per_car:
+           A Pandas DataFrame containing usage CO2 emissions data for different powertrains.
+
+       :param pd.DataFrame co2e_production_one_car:
+           A Pandas DataFrame containing production CO2 emissions for one car for different powertrains.
+
+       :param str segment:
+           The selected vehicle segment (by user) for which the production comparison will be visualized.
+
+       :return: go.Figure
+           A Plotly figure representing the accumulated CO2 emissions of different powertrains per year.
+       """
     x = np.arange(20)
     fig_production_comparison_per_year = go.Figure(go.Scatter(
         x=x,
-        y=co2_per_car.loc['icev', f"{segment}"] * x + co2e_production_one_car.loc['icev', f"{segment}"],
-        name='icev'
+        y=co2_per_car.loc['ICEV', f"{segment}"] * x + co2e_production_one_car.loc['ICEV', f"{segment}"],
+        name='ICEV'
     ))
     fig_production_comparison_per_year.add_trace(go.Scatter(
         x=x,
-        y=co2_per_car.loc['hev', f"{segment}"] * x + co2e_production_one_car.loc['hev', f"{segment}"],
-        name='hev'
+        y=co2_per_car.loc['HEV', f"{segment}"] * x + co2e_production_one_car.loc['HEV', f"{segment}"],
+        name='HEV'
     ))
     fig_production_comparison_per_year.add_trace(go.Scatter(
         x=x,
-        y=co2_per_car.loc['phev', f"{segment}"] * x + co2e_production_one_car.loc['phev', f"{segment}"],
-        name='phev'
+        y=co2_per_car.loc['PHEV', f"{segment}"] * x + co2e_production_one_car.loc['PHEV', f"{segment}"],
+        name='PHEV'
     ))
     fig_production_comparison_per_year.add_trace(go.Scatter(
         x=x,
-        y=co2_per_car.loc['bev', f"{segment}"] * x + co2e_production_one_car.loc['bev', f"{segment}"],
-        name='bev'
+        y=co2_per_car.loc['BEV', f"{segment}"] * x + co2e_production_one_car.loc['BEV', f"{segment}"],
+        name='BEV'
     ))
     fig_production_comparison_per_year.update_layout(
         title='Accumulated Co<sub>2e</sub> of different powertrains per year',
@@ -436,27 +531,46 @@ def get_fig_production_comparison_per_year(co2_per_car, segment):
 
 
 def get_fig_production_comparison_per_km(co2_per_car_per_km, segment):
+    """
+       Create a Plotly figure representing the accumulated CO2 emissions of different powertrains per kilometer.
+
+       This function takes two Pandas DataFrames containing usage CO2 emissions data for different powertrains and their
+       corresponding production CO2 emissions for one car. It generates a Plotly scatter plot visualizing the accumulated
+       CO2 emissions for ICEV, HEV, PHEV, and BEV over a range of years.
+
+       :param pd.DataFrame co2_per_car:
+           A Pandas DataFrame containing CO2 usage emissions data for different powertrains.
+
+       :param pd.DataFrame co2e_production_one_car:
+           A Pandas DataFrame containing production CO2 emissions for one car for different powertrains.
+
+       :param str segment:
+           The selected vehicle segment (by user) for which the production comparison will be visualized.
+
+       :return: go.Figure
+           A Plotly figure representing the accumulated CO2 emissions of different powertrains per kilometer.
+       """
     x = np.arange(300000)
 
     fig_production_comparison_per_km = go.Figure(go.Scatter(
         x=x,
-        y=co2_per_car_per_km.loc['icev', f"{segment}"] * x + co2e_production_one_car.loc['icev', f"{segment}"],
-        name='icev'
+        y=co2_per_car_per_km.loc['ICEV', f"{segment}"] * x + co2e_production_one_car.loc['ICEV', f"{segment}"],
+        name='ICEV'
     ))
     fig_production_comparison_per_km.add_trace(go.Scatter(
         x=x,
-        y=co2_per_car_per_km.loc['hev', f"{segment}"] * x + co2e_production_one_car.loc['hev', f"{segment}"],
-        name='hev'
+        y=co2_per_car_per_km.loc['HEV', f"{segment}"] * x + co2e_production_one_car.loc['HEV', f"{segment}"],
+        name='HEV'
     ))
     fig_production_comparison_per_km.add_trace(go.Scatter(
         x=x,
-        y=co2_per_car_per_km.loc['phev', f"{segment}"] * x + co2e_production_one_car.loc['phev', f"{segment}"],
-        name='phev'
+        y=co2_per_car_per_km.loc['PHEV', f"{segment}"] * x + co2e_production_one_car.loc['PHEV', f"{segment}"],
+        name='PHEV'
     ))
     fig_production_comparison_per_km.add_trace(go.Scatter(
         x=x,
-        y=co2_per_car_per_km.loc['bev', f"{segment}"] * x + co2e_production_one_car.loc['bev', f"{segment}"],
-        name='bev'
+        y=co2_per_car_per_km.loc['BEV', f"{segment}"] * x + co2e_production_one_car.loc['BEV', f"{segment}"],
+        name='BEV'
     ))
     fig_production_comparison_per_km.update_layout(
         title='accumulated Co<sub>2e</sub> of different powertrains per km',
@@ -470,6 +584,21 @@ def get_fig_production_comparison_per_km(co2_per_car_per_km, segment):
 
 
 def get_fig_scenario_comparison(chosen_scenario_list, chosen_unit):
+    """
+        Create a Plotly figure representing a comparison between different scenarios.
+
+        This function takes a unit of measurement, a list of chosen scenarios, and generates a Plotly horizontal bar chart
+        visualizing the total CO2 emissions for each scenario based on the chosen unit of measurement.
+
+        :param str chosen_unit:
+            The chosen unit of measurement.
+
+        :param Union[str, List[str]] chosen_scenario_list:
+            Either a single scenario name or a list of scenario names to be compared (chosen by user).
+
+        :return: go.Figure
+            A Plotly figure representing the comparison between different scenarios.
+        """
     chosen_unit = str(chosen_unit).lower()
     fig_comparison = go.Figure()
     if not type(chosen_scenario_list) == list:
@@ -504,6 +633,31 @@ def get_fig_scenario_comparison(chosen_scenario_list, chosen_unit):
 
 
 def get_fig_lca_waterfall(chosen_scenario_name, chosen_lca, chosen_vehicle_class, chosen_segment, is_recycling_displayed):
+    """
+        Create a Plotly figure representing a waterfall plot for the life cycle assessment (LCA) of a single car.
+
+        This function takes parameters such as the scenario name, LCA type, vehicle class, segment, and a flag indicating
+        whether recycling is displayed. It generates a Plotly waterfall chart visualizing the LCA of a single car with
+        different components including production, usage, recycling, and total CO2 emissions.
+
+        :param str chosen_scenario_name:
+            The name of the chosen scenario.
+
+        :param str chosen_lca:
+            The chosen type of life cycle assessment (LCA).
+
+        :param str chosen_vehicle_class:
+            The selected vehicle class for which the LCA will be visualized.
+
+        :param str chosen_segment:
+            The selected vehicle segment for which the LCA will be visualized.
+
+        :param bool is_recycling_displayed:
+            A flag indicating whether recycling is displayed.
+
+        :return: go.Figure
+            A Plotly figure representing the waterfall plot for the life cycle assessment of a single car.
+        """
     chosen_scenario_df = pd.read_csv(f'{config.SCENARIO_FOLDER_PATH}/{chosen_scenario_name}', sep=';', decimal=",",
                                      thousands='.', encoding="ISO-8859-1", index_col=[0, 1], skipinitialspace=True,
                                      header=[5])
@@ -556,6 +710,20 @@ def get_fig_lca_waterfall(chosen_scenario_name, chosen_lca, chosen_vehicle_class
 
 
 def get_yearly_co2_fig():
+    """
+        Create a Plotly figure representing the annual and accumulated CO2 emissions of passenger cars in Germany from 1990
+        until 2050.
+
+        This function takes the data of a selected scenario containing data on CO2 emissions. It generates
+        a Plotly bar chart representing the annual CO2 emissions per year and a cumulative line chart for the accumulated
+        CO2 emissions since 2022. It also includes a dashed line representing the allowed CO2 budget left.
+
+        :param pd.DataFrame selected_scenario:
+            A Pandas DataFrame containing data on CO2 emissions, paths, and budgets.
+
+        :return: go.Figure
+            A Plotly figure representing the annual and accumulated CO2 emissions of passenger cars in Germany.
+        """
     x_since_1990 = [1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
                     2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018]
     y_since_1990 = [110000000000, 112200000000, 116280000000, 119000000000, 116280000000, 119000000000, 119000000000,
@@ -576,8 +744,8 @@ def get_yearly_co2_fig():
         name="Co<sub>2e</sub> per year",
     ))
     yearly_co2e_fig.add_trace(go.Scatter(
-        x=x_array_combined[-30:],
-        y=numpy.cumsum(y_array_combined[-30:]),
+        x=x_array_combined[-28:],
+        y=numpy.cumsum(y_array_combined[-28:]),
         yaxis='y2',
         name="accumulated Co<sub>2e</sub>",
         line=dict(color="#007A63"),
@@ -588,9 +756,9 @@ def get_yearly_co2_fig():
         xref="paper",
         yref="y2",
         x0=0,
-        y0=1220000000000,
+        y0=804712000000,
         x1=1,
-        y1=1220000000000,
+        y1=804712000000,
         line=dict(color="darkgrey", dash="dash"),
         label=dict(text="allowed Co<sub>2e</sub> budget", font=dict(color="white"))
         )
@@ -609,7 +777,7 @@ def get_yearly_co2_fig():
             range=[0, 120000000000]
         ),
         yaxis2=dict(
-            title=dict(text="Co<sub>2e</sub> accumulated since 2020"),
+            title=dict(text="Co<sub>2e</sub> accumulated since 2022"),
             side="right",
             range=[0, 2250000000000],
             overlaying="y",
@@ -627,6 +795,22 @@ def get_yearly_co2_fig():
 
 
 def get_parameter_menu_content(filename_of_scenario):
+    """
+       Initialize global variables based on the selected scenario.
+
+       This function initializes and computes various global variables related to the selected scenario. It includes
+       calculations for shares of different fuels, CO2 emissions, and vehicle stock.
+
+       :param str filename_of_scenario:
+           The name of the selected scenario.
+
+       :param Optional[pd.DataFrame] scenario_df:
+           An optional Pandas DataFrame containing scenario data.
+
+       :return: Tuple[float, float, float, float, float, float, float, float, float, float, float, float, float, float, float,
+                      float, float, float, float, float, float, float, float, float, float, float, float, float, float, float]
+           A tuple containing various calculated global variables based on the selected scenario.
+       """
     init_global_variables(selected_scenario_name=filename_of_scenario, scenario_df=None)
     global selected_scenario
     vehicle_classes_list_without_lkw = list(dict.fromkeys(selected_scenario.index.get_level_values(0).to_list()))
@@ -640,24 +824,24 @@ def get_parameter_menu_content(filename_of_scenario):
     share_bioliq = selected_scenario.loc[(vehicle_classes_list_without_lkw, slice(None)), 'share_bioliq_totalgasoline'].unique()
     co2e_electricity = selected_scenario.loc[(vehicle_classes_list_without_lkw, slice(None)), 'co2e_electricity_WtW'].unique()
 
-    df_icev = selected_scenario.loc[('icev', slice(None))]
+    df_icev = selected_scenario.loc[('ICEV', slice(None))]
     icev_g_vehicle_stock = df_icev.loc[df_icev['energysupply'] == 'gasoline', 'total_number_of_cars_in_vehicle_class'][0]
     icev_g_share = icev_g_vehicle_stock / selected_scenario['number_of_cars_in_segment'].sum()
 
     icev_d_vehicle_stock = df_icev.loc[df_icev['energysupply'] == 'diesel', 'total_number_of_cars_in_vehicle_class'][0]
     icev_d_share = icev_d_vehicle_stock / selected_scenario['number_of_cars_in_segment'].sum()
 
-    df_hev = selected_scenario.loc[('hev', slice(None))]
+    df_hev = selected_scenario.loc[('HEV', slice(None))]
     hev_g_vehicle_stock = df_hev.loc[df_icev['energysupply'] == 'gasoline', 'total_number_of_cars_in_vehicle_class'][0]
     hev_g_share = hev_g_vehicle_stock / selected_scenario['number_of_cars_in_segment'].sum()
 
     hev_d_vehicle_stock = df_hev.loc[df_icev['energysupply'] == 'diesel', 'total_number_of_cars_in_vehicle_class'][0]
     hev_d_share = hev_d_vehicle_stock / selected_scenario['number_of_cars_in_segment'].sum()
 
-    phev_vehicle_stock = selected_scenario.loc[('phev', slice(None)), 'total_number_of_cars_in_vehicle_class'][0]
+    phev_vehicle_stock = selected_scenario.loc[('PHEV', slice(None)), 'total_number_of_cars_in_vehicle_class'][0]
     phev_share = phev_vehicle_stock / selected_scenario['number_of_cars_in_segment'].sum()
 
-    bev_vehicle_stock = selected_scenario.loc[('bev', slice(None)), 'total_number_of_cars_in_vehicle_class'][0]
+    bev_vehicle_stock = selected_scenario.loc[('BEV', slice(None)), 'total_number_of_cars_in_vehicle_class'][0]
     bev_share = bev_vehicle_stock / selected_scenario['number_of_cars_in_segment'].sum()
 
     co2e_e5_ttw = float(selected_scenario['co2e_E5_TtW'].unique())

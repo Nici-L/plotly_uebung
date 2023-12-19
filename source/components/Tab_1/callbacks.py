@@ -117,7 +117,7 @@ def register_callbacks(app_instance):
         fig.selected_scenario.loc[(vehicle_classes_list_without_lkw, slice(None)), 'co2e_electricity_WtW'] = co2e_electricity_kg
         # fig.selected_scenario['vehicle_stock'] = fig.selected_scenario['shareontotalvehicles'] * vehicle_stock
 
-        df_icev = fig.selected_scenario.loc[('icev', slice(None)), :].copy()
+        df_icev = fig.selected_scenario.loc[('ICEV', slice(None)), :].copy()
         vehicle_stock_icev_g = vehicle_stock * share_icev_g
         # fig.selected_scenario.loc[('icev', slice(None))] = df_icev
         condition_icev_g = df_icev['energysupply'] == 'gasoline'
@@ -127,9 +127,9 @@ def register_callbacks(app_instance):
         condition_icev_d = df_icev['energysupply'] == 'diesel'
         df_icev.loc[condition_icev_d, 'number_of_cars_in_segment'] = vehicle_stock_icev_d * df_icev.loc[condition_icev_d, 'share_of_segment_on_total_vehicles_of_class']
 
-        fig.selected_scenario.loc[('icev', slice(None))] = df_icev
+        fig.selected_scenario.loc[('ICEV', slice(None))] = df_icev
 
-        df_hev = fig.selected_scenario.loc[('hev', slice(None)), :].copy()
+        df_hev = fig.selected_scenario.loc[('HEV', slice(None)), :].copy()
         vehicle_stock_hev_g = vehicle_stock * share_hev_g
         condition_hev_g = df_hev['energysupply'] == 'gasoline'
         df_hev.loc[condition_hev_g, 'number_of_cars_in_segment'] = vehicle_stock_hev_g * df_hev.loc[condition_hev_g, 'share_of_segment_on_total_vehicles_of_class']
@@ -140,10 +140,10 @@ def register_callbacks(app_instance):
         # fig.selected_scenario.loc[('hev', slice(None))] = df_hev
 
         vehicle_stock_phev = vehicle_stock * share_phev
-        fig.selected_scenario.loc[('phev', slice(None)), 'number_of_cars_in_segment'] = vehicle_stock_phev * fig.selected_scenario.loc[('phev', slice(None)), 'share_of_segment_on_total_vehicles_of_class']
+        fig.selected_scenario.loc[('PHEV', slice(None)), 'number_of_cars_in_segment'] = vehicle_stock_phev * fig.selected_scenario.loc[('phev', slice(None)), 'share_of_segment_on_total_vehicles_of_class']
 
         vehicle_stock_bev = vehicle_stock * share_bev
-        fig.selected_scenario.loc[('bev', slice(None)), 'number_of_cars_in_segment'] = vehicle_stock_bev * fig.selected_scenario.loc[('bev', slice(None)), 'share_of_segment_on_total_vehicles_of_class']
+        fig.selected_scenario.loc[('BEV', slice(None)), 'number_of_cars_in_segment'] = vehicle_stock_bev * fig.selected_scenario.loc[('bev', slice(None)), 'share_of_segment_on_total_vehicles_of_class']
 
         fig.init_global_variables(selected_scenario_name=None, scenario_df=fig.selected_scenario)
 
