@@ -2,26 +2,19 @@ import dash
 import dash_bootstrap_components as dbc
 import os
 import pandas as pd
-from matplotlib import pyplot as plt
 import source.components.Tab_1.layout_header as header
 from dash import html, dcc, Output, Input, State, no_update
 import config as config
 import utils.calculations as calc
-import plotly.graph_objects as go
-import plotly.express as px
-import utils.colors_KIT_plotly as clr
 from init_app import app
 import source.components.Tab_1.figures as fig
 from source.components.Tab_1 import callbacks as tab1_callbacks
 import plotly.io as pio
 
 
-#
-# todo: Farbe allowed co2 budget
 # todo: Erklärungen/Quellen/Beschreibungen ergänzen
 # todo: Grafiken alignen
-# todo: comparison figure überarbeiten
-# todo: achsenbeschriftung mit milliarden eventuell anders darstellen
+# todo:  https://dash.plotly.com/background-callbacks#:~:text=debug%3DTrue)-,Example%202%3A%20Disable%20Button%20While%20Callback%20Is%20Running,-Notice%20how%20in
 
 
 
@@ -344,7 +337,7 @@ app.layout = dbc.Container([
                         dcc.Dropdown(options=['kWh', 'liter'], id='kWh-or-liter', value='liter', className='Dropdown-2'),
                         dcc.Dropdown(options=fig.selected_scenario.index.get_level_values(0).unique(), id='consumption-vehicle-class', multi=True, value=['ICEV'], className='Dropdown-2'),
                         dcc.Dropdown(options=fig.selected_scenario.index.get_level_values(1).unique(), id='consumption-segment', multi=True, value=['Mini', 'Kleinwagen'], className='Dropdown-2'),
-                        dcc.Graph(id='fig-consumption', figure=fig.get_fig_consumption(fig.selected_scenario, ['Mini', 'Kleinwagen'], 'ICEV')),
+                        dcc.Graph(id='fig-consumption', figure=fig.get_fig_consumption_l(fig.selected_scenario, ['Mini', 'Kleinwagen'], 'ICEV')),
                         html.Div(
                             [
                                 dbc.Button(
@@ -457,4 +450,3 @@ if __name__ == '__main__':
     tab1_callbacks.register_callbacks(app)
     app.run(debug=True)
 
-# todo:  https://dash.plotly.com/background-callbacks#:~:text=debug%3DTrue)-,Example%202%3A%20Disable%20Button%20While%20Callback%20Is%20Running,-Notice%20how%20in

@@ -1,5 +1,3 @@
-import datetime
-import time
 
 import plotly.graph_objects as go
 import plotly.express as px
@@ -392,7 +390,7 @@ def get_fig_co2e_segment_all_vehicle_classes(co2e_dataframe, chosen_segment):
     return fig_co2e_segment_all_vehicle_classes
 
 
-def get_fig_consumption(co2e_dataframe, chosen_segments, chosen_vehicle_class):
+def get_fig_consumption_l(co2e_dataframe, chosen_segments, chosen_vehicle_class):
     """
        Create a Plotly figure representing fuel consumption for a chosen vehicle class and segments.
 

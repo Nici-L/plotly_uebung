@@ -1,10 +1,7 @@
 from dash import html, dcc, Output, Input, State, no_update
 import source.components.Tab_1.figures as fig
-from datetime import datetime
 import plotly.graph_objects as go
 import os
-import plotly.express as px
-import numpy as np
 import pandas as pd
 import source.config as config
 import source.utils.calculations as calc
@@ -298,15 +295,15 @@ def register_callbacks(app_instance):
         if chosen_unit == 'liter' and chosen_vehicle_class is None or len(chosen_vehicle_class) == 0 and chosen_segments is None or len(chosen_segments) == 0 or None:
             return no_update
         elif chosen_unit == 'liter' and len(chosen_vehicle_class) == 0 and len(chosen_segments) == 1:
-            fig_consumption = fig.get_fig_consumption(fig.selected_scenario, chosen_segments, slice(None))
+            fig_consumption = fig.get_fig_consumption_l(fig.selected_scenario, chosen_segments, slice(None))
             fig_consumption.write_image("images/fig_consumption.pdf")
             return fig_consumption
         elif chosen_unit == 'liter' and len(chosen_vehicle_class) >= 1 and len(chosen_segments) == 1:
-            fig_consumption = fig.get_fig_consumption(fig.selected_scenario, chosen_segments, chosen_vehicle_class)
+            fig_consumption = fig.get_fig_consumption_l(fig.selected_scenario, chosen_segments, chosen_vehicle_class)
             fig_consumption.write_image("images/fig_consumption.pdf")
             return fig_consumption
         elif chosen_unit == 'liter' and len(chosen_vehicle_class) >= 1 and len(chosen_segments) >= 1:
-            fig_consumption = fig.get_fig_consumption(fig.selected_scenario, chosen_segments, chosen_vehicle_class)
+            fig_consumption = fig.get_fig_consumption_l(fig.selected_scenario, chosen_segments, chosen_vehicle_class)
             fig_consumption.write_image("images/fig_consumption.pdf")
             return fig_consumption
 
