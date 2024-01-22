@@ -297,16 +297,16 @@ def get_fig_sum_total_co2e(co2e_ttw_series, selected_scenario_df):
     # print(df_vehicles_sum)
     # print(df_vehicles_sum['icev_sum']['co2e'])
     fig_sum_total_co2e = go.Figure(
-        go.Bar(name='ICEV', x=['Co<sub>2e</sub> of <br> chosen scenario'], y=[df_vehicles_sum['icev_sum']['co2e']], marker_color=clr.blue2_base)
+        go.Bar(name='ICEV', x=['CO<sub>2e</sub> of <br> chosen scenario'], y=[df_vehicles_sum['icev_sum']['co2e']], marker_color=clr.blue2_base)
     )
     fig_sum_total_co2e.add_trace(
-        go.Bar(name='HEV', x=['Co<sub>2e</sub> of <br> chosen scenario'], y=[df_vehicles_sum['hev_sum']['co2e']], marker_color=clr.maygreen_base)
+        go.Bar(name='HEV', x=['CO<sub>2e</sub> of <br> chosen scenario'], y=[df_vehicles_sum['hev_sum']['co2e']], marker_color=clr.maygreen_base)
     )
     fig_sum_total_co2e.add_trace(
-       go.Bar(name='PHEV', x=['Co<sub>2e</sub> of <br> chosen scenario'], y=[df_vehicles_sum['phev_sum']['co2e']], marker_color=clr.purple_base)
+       go.Bar(name='PHEV', x=['CO<sub>2e</sub> of <br> chosen scenario'], y=[df_vehicles_sum['phev_sum']['co2e']], marker_color=clr.purple_base)
     )
     fig_sum_total_co2e.add_trace(
-        go.Bar(name='BEV', x=['Co<sub>2e</sub> of <br> chosen scenario'],
+        go.Bar(name='BEV', x=['CO<sub>2e</sub> of <br> chosen scenario'],
                y=[df_vehicles_sum['bev_sum']['co2e']],
                marker_color=clr.orange_base,
                text=['{:.1f}B'.format(int(y_vehicle_sum) / 1000000000)]
@@ -325,7 +325,7 @@ def get_fig_sum_total_co2e(co2e_ttw_series, selected_scenario_df):
     emission_target_2030 = selected_scenario_df['emission_target_de_30'].iloc[0]
     fig_sum_total_co2e.add_trace(
         go.Bar(
-            x=['Co<sub>2e</sub> target <br> Germany 2030'],
+            x=['CO<sub>2e</sub> target <br> Germany 2030'],
             y=[emission_target_2030],
             marker_color=clr.green1_base,
             name='target 2030',
@@ -335,7 +335,7 @@ def get_fig_sum_total_co2e(co2e_ttw_series, selected_scenario_df):
     emission_target_2040 = selected_scenario_df['emission_target_de_40'].iloc[0]
     fig_sum_total_co2e.add_trace(
         go.Bar(
-            x=['Co<sub>2e</sub> target <br> Germany 2040'],
+            x=['CO<sub>2e</sub> target <br> Germany 2040'],
             y=[emission_target_2040],
             marker_color=clr.maygreen_base,
             name='target 2040',
@@ -378,7 +378,7 @@ def get_fig_co2e_segment_all_vehicle_classes(co2e_dataframe, chosen_segment):
                                                   )
     fig_co2e_segment_all_vehicle_classes.update_layout(
             title='CO<sub>2e</sub> created by usage per year in kg',
-            yaxis_title="Co<sub>2e</sub> in kg",
+            yaxis_title="CO<sub>2e</sub> in kg",
             xaxis_title="vehicle class",
             plot_bgcolor='#003442',
             paper_bgcolor='#003442',
@@ -518,8 +518,8 @@ def get_fig_production_comparison_per_year(co2_per_car, segment):
         name='BEV'
     ))
     fig_production_comparison_per_year.update_layout(
-        title='Accumulated Co<sub>2e</sub> of different powertrains per year',
-        yaxis_title="Co<sub>2e</sub> in kg",
+        title='Accumulated CO<sub>2e</sub> of different powertrains per year',
+        yaxis_title="CO<sub>2e</sub> in kg",
         xaxis_title="year",
         plot_bgcolor='#003442',
         paper_bgcolor='#003442',
@@ -571,8 +571,8 @@ def get_fig_production_comparison_per_km(co2_per_car_per_km, segment):
         name='BEV'
     ))
     fig_production_comparison_per_km.update_layout(
-        title='accumulated Co<sub>2e</sub> of different powertrains per km',
-        yaxis_title="Co<sub>2e</sub> in kg",
+        title='accumulated CO<sub>2e</sub> of different powertrains per km',
+        yaxis_title="CO<sub>2e</sub> in kg",
         xaxis_title="km",
         plot_bgcolor='#003442',
         paper_bgcolor='#003442',
@@ -616,7 +616,7 @@ def get_fig_scenario_comparison(chosen_scenario_list, chosen_unit):
         fig_comparison.update_layout(
             title='Comparison between different scenarios',
             yaxis_title="Scenarios",
-            xaxis_title="Co<sub>2e</sub> in mio t",
+            xaxis_title="CO<sub>2e</sub> in mio t",
             legend_title_text="LCA",
             plot_bgcolor='#003442',
             paper_bgcolor='#003442',
@@ -739,13 +739,13 @@ def get_yearly_co2_fig():
         x=x_array_combined,
         y=y_array_combined,
         marker_color=clr.green1_base,
-        name="Co<sub>2e</sub> per year",
+        name="CO<sub>2e</sub> per year",
     ))
     yearly_co2e_fig.add_trace(go.Scatter(
         x=x_array_combined[-28:],
         y=numpy.cumsum(y_array_combined[-28:]),
         yaxis='y2',
-        name="accumulated Co<sub>2e</sub>",
+        name="accumulated CO<sub>2e</sub>",
         line=dict(color="#007A63"),
         )
     )
@@ -758,10 +758,10 @@ def get_yearly_co2_fig():
         x1=1,
         y1=804712000000,
         line=dict(color="darkgrey", dash="dash"),
-        label=dict(text="allowed Co<sub>2e</sub> budget", font=dict(color="white"))
+        label=dict(text="allowed CO<sub>2e</sub> budget", font=dict(color="white"))
         )
     yearly_co2e_fig.update_layout(
-        title='Co<sub>2e</sub> of passenger cars in Germany from 1990 until 2050',
+        title='CO<sub>2e</sub> of passenger cars in Germany from 1990 until 2050',
         yaxis_title="co2e in kg",
         xaxis_title="year",
         plot_bgcolor='#003442',
@@ -770,12 +770,12 @@ def get_yearly_co2_fig():
         barmode='relative',
         hovermode="x unified",
         yaxis=dict(
-            title=dict(text="Co<sub>2e</sub> per year"),
+            title=dict(text="CO<sub>2e</sub> per year"),
             side="left",
             range=[0, 120000000000]
         ),
         yaxis2=dict(
-            title=dict(text="Co<sub>2e</sub> accumulated since 2022"),
+            title=dict(text="CO<sub>2e</sub> accumulated since 2022"),
             side="right",
             range=[0, 2250000000000],
             overlaying="y",

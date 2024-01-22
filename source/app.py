@@ -12,11 +12,6 @@ from source.components.Tab_1 import callbacks as tab1_callbacks
 import plotly.io as pio
 
 
-# todo: Erklärungen/Quellen/Beschreibungen ergänzen
-# todo: Grafiken alignen
-# todo:  https://dash.plotly.com/background-callbacks#:~:text=debug%3DTrue)-,Example%202%3A%20Disable%20Button%20While%20Callback%20Is%20Running,-Notice%20how%20in
-
-
 
 # app = dash.Dash(__name__, external_stylesheets=[dbc.themes.SOLAR], assets_url_path='/source/assets')
 
@@ -285,7 +280,7 @@ app.layout = dbc.Container([
                         n_clicks=0,
                     ),
                     dbc.Collapse(
-                        dbc.Card(dbc.CardBody("The Co<sub>2e</sub> targets of Germany are defined by the government. This official number was taken and multiplied with 68% which is the share passenger cars hold on total Co2e emissions caused by traffic.")),
+                        dbc.Card(dbc.CardBody("The CO<sub>2e</sub> targets of Germany are defined by the government. This official number was taken and multiplied with 68% which is the share passenger cars hold on total Co2e emissions caused by traffic.")),
                         id="collapse",
                         is_open=False,
                     ),
@@ -297,11 +292,11 @@ app.layout = dbc.Container([
             html.Div(
                 children=[
                     dbc.Label("Select a segment and calculation"),
-                    dbc.Alert("The vehicle class PHEV does not have a segment Mini!", color="danger", dismissable=True, className='small-number-warning'),
-                    dcc.Dropdown(options=fig.selected_scenario.index.get_level_values(1).unique(), id='choose-segments', value='Mini', searchable=False, className='Dropdown-2'),
+                    dbc.Alert("The vehicle class PHEV does not have a segment mini!", color="danger", dismissable=True, className='small-number-warning'),
+                    dcc.Dropdown(options=fig.selected_scenario.index.get_level_values(1).unique(), id='choose-segments', value='mini', searchable=False, className='Dropdown-2'),
                     dcc.Dropdown(options=['one car', 'all vehicles'], id='one_car_dropdown', value='all vehicles', className='Dropdown-2'),
                     dcc.Dropdown(options=['TtW', 'WtW'], id='TtW_vehicle_class_fig', value='TtW', className='Dropdown-2'),
-                    dcc.Graph(id='co2e_ttw_barchart_car', figure=fig.get_fig_co2e_segment_all_vehicle_classes(fig.co2e_ttw_per_segment_df, 'Kleinwagen'), className='mt-4')
+                    dcc.Graph(id='co2e_ttw_barchart_car', figure=fig.get_fig_co2e_segment_all_vehicle_classes(fig.co2e_ttw_per_segment_df, 'mini'), className='mt-4')
                 ]
             ),
             html.Div(
@@ -336,8 +331,8 @@ app.layout = dbc.Container([
                         dbc.Label("Select a vehicle class and segment"),
                         dcc.Dropdown(options=['kWh', 'liter'], id='kWh-or-liter', value='liter', className='Dropdown-2'),
                         dcc.Dropdown(options=fig.selected_scenario.index.get_level_values(0).unique(), id='consumption-vehicle-class', multi=True, value=['ICEV'], className='Dropdown-2'),
-                        dcc.Dropdown(options=fig.selected_scenario.index.get_level_values(1).unique(), id='consumption-segment', multi=True, value=['Mini', 'Kleinwagen'], className='Dropdown-2'),
-                        dcc.Graph(id='fig-consumption', figure=fig.get_fig_consumption_l(fig.selected_scenario, ['Mini', 'Kleinwagen'], 'ICEV')),
+                        dcc.Dropdown(options=fig.selected_scenario.index.get_level_values(1).unique(), id='consumption-segment', multi=True, value=['mini', 'smallcar'], className='Dropdown-2'),
+                        dcc.Graph(id='fig-consumption', figure=fig.get_fig_consumption_l(fig.selected_scenario, ['mini', 'smallcar'], 'ICEV')),
                         html.Div(
                             [
                                 dbc.Button(
@@ -400,10 +395,10 @@ app.layout = dbc.Container([
                   dcc.Dropdown(options=[{key: scenario_dict[key] for key in ['value', 'label']} for scenario_dict in scenario_filenames], value=default_scenario_filename, id='scenario-dropdown-lca', className='Dropdown-2'),
                   dcc.Dropdown(options=['TtW', 'WtW'], id='chose_lca', value='TtW', className='Dropdown-2'),
                   dcc.Dropdown(options=fig.selected_scenario.index.get_level_values(0).unique(), id='lca-vehicle-class', value='ICEV', className='Dropdown-2'),
-                  dcc.Dropdown(options=fig.selected_scenario.index.get_level_values(1).unique(), id='lca-segment', value='Mini', className='Dropdown-2'),
+                  dcc.Dropdown(options=fig.selected_scenario.index.get_level_values(1).unique(), id='lca-segment', value='mini', className='Dropdown-2'),
                   dbc.Switch(label='Include recycling', value=True, id='recycling-option', className='recycling_toggle_switch'),
                   dbc.Button(id='selection-button', n_clicks=0, children='Apply selection', color='success', size='m', class_name='m-3 selection-button'),
-                  dcc.Graph(id='lca-waterfall-fig', figure=fig.get_fig_lca_waterfall(default_scenario_filename, chosen_lca='ttw', chosen_vehicle_class='ICEV', chosen_segment='Mini', is_recycling_displayed=True))
+                  dcc.Graph(id='lca-waterfall-fig', figure=fig.get_fig_lca_waterfall(default_scenario_filename, chosen_lca='ttw', chosen_vehicle_class='ICEV', chosen_segment='mini', is_recycling_displayed=True))
               ]
             ),
             html.Div(
@@ -429,10 +424,10 @@ app.layout = dbc.Container([
         dbc.Col([
             html.Div([
                 dcc.Dropdown(options=['TtW', 'WtW'], id='chose_lca_scatter_plot', value='TtW', className='Dropdown-2'),
-                dcc.Dropdown(options=fig.selected_scenario.index.get_level_values(1).unique(), id='lca-segment-production-comparison', value='Mittelklasse', className='Dropdown-2'),
+                dcc.Dropdown(options=fig.selected_scenario.index.get_level_values(1).unique(), id='lca-segment-production-comparison', value='mid-range vehicle', className='Dropdown-2'),
                 dcc.Dropdown(options=['per year', 'per km'], id='chose_km_or_year', value='per year', className='Dropdown-2'),
                 dbc.Button(id='selection-button-vehicle-class-comparison', n_clicks=0, children='Apply selection', color='success', size='m', class_name='m-3 selection-button'),
-                dcc.Graph(id='fig_production_comparison', figure=fig.get_fig_production_comparison_per_year(co2_per_car=fig.co2e_ttw_per_car, segment='Mittelklasse'))
+                dcc.Graph(id='fig_production_comparison', figure=fig.get_fig_production_comparison_per_year(co2_per_car=fig.co2e_ttw_per_car, segment='mid-range vehicle'))
             ], className='m-3')
         ])
     ]),
